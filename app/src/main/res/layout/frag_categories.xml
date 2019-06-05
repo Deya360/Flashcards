@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/cat_empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+
+        android:fontFamily="@font/varela_round"
+        android:text="There are no categories to show!"
+        android:textAlignment="center"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/cat_empty_progress_view"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_marginTop="50dp"
+        android:layout_gravity="center_horizontal"
+
+        android:visibility="gone"/>
+
+    <com.sd.coursework.Utils.UI.EmptySupportedRecyclerView
+        android:id="@+id/cat_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="92dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+
+        tools:listitem="@layout/item_categories">
+
+    </com.sd.coursework.Utils.UI.EmptySupportedRecyclerView>
+
+</android.support.design.widget.CoordinatorLayout>

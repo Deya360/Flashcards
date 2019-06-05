@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".QuizActivity"
+    android:animateLayoutChanges="true">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar3"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize">
+
+        <RelativeLayout
+            android:id="@+id/q_setupLy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:paddingBottom="120dp"
+            android:visibility="visible">
+
+            <LinearLayout
+                android:id="@+id/q_word_amountLy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_centerHorizontal="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="Number of words:   "
+                    android:textSize="20dp"
+                    android:textColor="@android:color/black"
+                    android:fontFamily="@font/signika_bold"/>
+
+                <Spinner
+                    android:id="@+id/q_word_amountSp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/q_shuffleCb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/q_word_amountLy"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="15dp"
+
+                android:checked="true"
+                android:text="Shuffle Words"
+                android:textSize="20dp"
+                android:textColor="@android:color/black"
+                android:fontFamily="@font/signika_bold"/>
+
+            <Button
+                android:id="@+id/q_startBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/q_shuffleCb"
+                android:layout_marginTop="45dp"
+                android:layout_centerHorizontal="true"
+                android:padding="15dp"
+
+                android:text="Begin"
+                android:textSize="18dp"
+                android:textColor="@android:color/white"
+                android:fontFamily="@font/roboto_slab_bold"
+                android:background="@color/colorSecondary800" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/q_contentLy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <RelativeLayout
+                android:id="@+id/q_infoLy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#E8E8EC">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:padding="5dp">
+
+                    <TextView
+                        android:id="@+id/q_words_leftTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+
+                        android:text="Words Left:"
+                        android:textSize="20dp"
+                        android:textColor="@android:color/black"
+                        android:fontFamily="@font/roboto_slab_bold"/>
+
+                    <TextView
+                        android:id="@+id/q_wrong_counterTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="20dp"
+                        android:layout_toStartOf="@+id/q_correct_counterTv"
+
+                        android:textSize="20dp"
+                        android:gravity="center"
+                        android:textColor="@android:color/black"
+                        android:fontFamily="@font/roboto_condensed_regular"
+                        android:drawableLeft="@drawable/ic_wrong_24dp"/>
+
+                    <TextView
+                        android:id="@+id/q_correct_counterTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+
+                        android:textSize="20dp"
+                        android:gravity="center"
+                        android:textColor="@android:color/black"
+                        android:fontFamily="@font/roboto_condensed_regular"
+                        android:drawableStart="@drawable/ic_correct_24dp"/>
+
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/q_info_shadowLy"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_below="@id/q_infoLy"
+                android:background="@drawable/toolbar_drop_shadow">
+
+            </RelativeLayout>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/q_cardVp"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_below="@id/q_info_shadowLy">
+
+            </android.support.v4.view.ViewPager>
+
+
+            <RelativeLayout
+                android:id="@+id/q_buttonLy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:paddingBottom="40dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="70dp"
+                    android:layout_alignWithParentIfMissing="true"
+                    android:layout_above="@id/q_nextBtn"
+                    android:clipToPadding="false"
+                    android:gravity="center">
+
+                    <com.sd.coursework.Utils.UI.CircleButton
+                        android:id="@+id/q_wrongBtn"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginEnd="60dp"
+
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/actionBarItemBackground"
+                        android:src="@drawable/ic_wrong_white_48dp"
+
+                        app:cb_color="#F4511E"
+                        app:cb_pressedRingWidth="6dp"
+                        app:cb_animTime="700"/>
+
+                    <com.varunest.sparkbutton.SparkButton
+                        android:id="@+id/q_correctBtn"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_centerInParent="true"
+                        android:layout_marginStart="60dp"
+                        android:layout_toEndOf="@+id/q_wrongBtn"
+                        android:clipToPadding="false"
+                        android:background="@drawable/circular_button_back"
+
+                        app:sparkbutton_pressOnTouch="true"
+                        app:sparkbutton_activeImage="@drawable/ic_correct_white_48dp"
+                        app:sparkbutton_iconSize="40dp"
+                        app:sparkbutton_primaryColor="@color/spark_button_primary"
+                        app:sparkbutton_secondaryColor="@color/spark_button_secondary"
+                        app:sparkbutton_animationSpeed="0.85">
+
+                    </com.varunest.sparkbutton.SparkButton>
+
+                </RelativeLayout>
+
+                <com.sd.coursework.Utils.UI.CircleButton
+                    android:id="@+id/q_nextBtn"
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:layout_marginTop="-40dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentBottom="true"
+
+                    android:src="@drawable/icon_step_forward_white_48dp"
+                    android:visibility="visible"
+
+                    app:cb_color="@color/colorSecondary500"
+                    app:cb_pressedRingWidth="9dp"
+                    app:cb_animTime="750"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/actionBarItemBackground"/>
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+
+
+
+
+</android.support.design.widget.CoordinatorLayout>

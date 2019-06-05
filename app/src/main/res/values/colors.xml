@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+
+    <color name="colorPrimary700">#344955</color>
+    <color name="colorPrimary800">#232F34</color>
+    <color name="colorPrimary600">#4A6572</color>
+
+    <color name="colorSecondary800">#F9AA33</color>
+    <color name="colorSecondary500">#FF9800</color>
+
+    <color name="colorBackground">#F8F8FF</color>
+
+    <color name="ic_launcher_background">#FFFFFF</color>
+    <color name="spinner_text">#AB000000</color>
+    <color name="spark_button_primary">#8BC34A</color>
+    <color name="spark_button_secondary">#FFCA28</color>
+
+    <color name="red800">#C62828</color>
+
+
+
+
+    <!--&lt;!&ndash;Background Colors (Light versions of material design colors)&ndash;&gt;-->
+    <!--<array name="bckl_colors">-->
+        <!--<item name="bckl_white" type="color">@color/bckl0_white</item>-->
+        <!--<item name="bckl_green" type="color">#C8E6C9</item>-->
+        <!--<item name="bckl_light_green" type="color">#DCEDC8</item>-->
+        <!--<item name="bckl_lime" type="color">#F0F4C3</item>-->
+        <!--<item name="bckl_yellow" type="color">#FFF9C4</item>-->
+        <!--<item name="bckl_amber" type="color">#FFECB3</item>-->
+        <!--<item name="bckl_orange" type="color">#FFE0B2</item>-->
+        <!--<item name="bckl_deep_orange" type="color">#FFCCBC</item>-->
+        <!--<item name="bckl_brown" type="color">#D7CCC8</item>-->
+        <!--<item name="bckl_blue_grey" type="color">#CFD8DC</item>-->
+        <!--<item name="bckl_teal" type="color">#B2DFDB</item>-->
+        <!--<item name="bckl_cyan" type="color">#B2EBF2</item>-->
+        <!--<item name="bckl_light_blue" type="color">#B3E5FC</item>-->
+        <!--<item name="bckl_blue" type="color">#BBDEFB</item>-->
+        <!--<item name="bckl_indigo" type="color">#C5CAE9</item>-->
+        <!--<item name="bckl_deep_purple" type="color">#D1C4E9</item>-->
+        <!--<item name="bckl_purple" type="color">#E1BEE7</item>-->
+        <!--<item name="bckl_pink" type="color">#F8BBD0</item>-->
+        <!--<item name="bckl_red" type="color">#FFCDD2</item>-->
+    <!--</array>-->
+
+</resources>

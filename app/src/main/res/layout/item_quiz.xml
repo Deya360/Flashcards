@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.wajahatkarim3.easyflipview.EasyFlipView
+        android:id="@+id/quiz_card"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        app:flipEnabled="true"
+        app:flipOnTouch="false"
+        app:flipDuration="400"
+        app:flipType="vertical"
+        app:flipFrom="back"
+        app:autoFlipBack="false"
+        android:clickable="true"
+        android:focusable="true">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/quiz_backCard"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="15dp"
+
+                app:cardElevation="6dp"
+                app:cardCornerRadius="15dp"
+                android:shape="ring"
+                android:thicknessRatio="1.9">
+
+                <TextView
+                    android:id="@+id/quiz_definitionTv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+
+                    android:padding="15dp"
+                    android:text="an individual of the sex that is typically capable of producing small, usually motile gametes (such as sperm or spermatozoa) which fertilize the eggs of a female "
+                    android:textSize="24dp"
+                    android:ellipsize="end"
+                    android:maxLines="8"
+                    android:textColor="@android:color/black"
+                    android:fontFamily="@font/signika"
+                    android:textAlignment="center"/>
+
+            </android.support.v7.widget.CardView>
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/quiz_FrontCard"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="15dp"
+
+                app:cardElevation="6dp"
+                app:cardCornerRadius="15dp"
+                android:shape="ring"
+                android:thicknessRatio="1.9">
+
+                <TextView
+                    android:id="@+id/quiz_wordTv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+
+                    android:padding="15dp"
+                    android:text="male"
+                    android:textSize="40dp"
+                    android:textColor="@android:color/black"
+                    android:fontFamily="@font/signika_bold"
+                    android:textIsSelectable="true"
+                    android:textAlignment="center"/>
+
+            </android.support.v7.widget.CardView>
+
+        </FrameLayout>
+
+
+    </com.wajahatkarim3.easyflipview.EasyFlipView>
+
+</android.support.design.widget.CoordinatorLayout>

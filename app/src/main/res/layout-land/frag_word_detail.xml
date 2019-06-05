@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".WordDetailFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="5dp"
+        android:padding="12dp"
+
+        android:orientation="vertical">
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:hint="Word">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/nw_wordEt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+
+                android:textSize="22sp"
+                android:textColor="@android:color/black"
+                android:fontFamily="@font/roboto_slab_bold"
+                android:inputType="text" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Definition">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/nw_definitionEt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+
+                android:textSize="20sp"
+                android:textColor="@android:color/black"
+                android:fontFamily="@font/roboto_slab"
+                android:justificationMode="inter_word"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@android:color/white">
+
+            <RelativeLayout
+                android:id="@+id/nw_headerLy"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/border_b"
+
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:padding="4dp"
+                    android:layout_centerVertical="true"
+
+                    android:text="Online Suggestions:"
+                    android:textSize="17sp"
+                    android:textColor="#8D000000"
+                    android:fontFamily="@font/roboto_slab" />
+
+                <ImageView
+                    android:id="@+id/nw_expand_more_lessIv"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_alignParentEnd="true"
+
+                    android:padding="15dp"
+                    android:background="@drawable/ic_expand_more" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/nw_contentLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/nw_headerLy"
+                android:background="@drawable/border_l_b_r"
+                android:padding="2dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/nw_empty_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:layout_centerVertical="true"
+                    android:visibility="gone"
+
+                    android:fontFamily="@font/varela_round"
+                    android:text="Nothing found"
+                    android:textColor="#8D000000"
+                    android:textSize="14dp"
+                    android:textAlignment="center" />
+
+                <ProgressBar
+                    android:id="@+id/nw_empty_progress_view"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone"/>
+
+                <com.sd.coursework.Utils.UI.EmptySupportedRecyclerView
+                    android:id="@+id/nw_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="190dp"
+                    android:scrollbars="vertical"
+
+                    tools:listitem="@layout/item_suggestions">
+
+                </com.sd.coursework.Utils.UI.EmptySupportedRecyclerView>
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/catTab"
+            android:icon="@drawable/ic_menu_cat"
+            android:title="My Categories" />
+        <item
+            android:id="@+id/wordTab"
+            android:icon="@drawable/ic_menu_words"
+            android:title="All Words" />
+        <item
+            android:id="@+id/statTab"
+            android:icon="@drawable/ic_menu_statistics"
+            android:title="Statistics"/>
+    </group>
+
+    <item android:title="Other">
+        <menu>
+            <item
+                android:id="@+id/portTab"
+                android:icon="@drawable/ic_menu_port"
+                android:title="Import/Export"
+                android:visible="false" />
+            <item
+                android:id="@+id/settingsTab"
+                android:icon="@drawable/ic_menu_settings"
+                android:title="Settings"
+                android:visible="false" />
+            <item
+                android:id="@+id/helpTab"
+                android:icon="@drawable/ic_menu_help"
+                android:title="Help" />
+        </menu>
+    </item>
+
+</menu>

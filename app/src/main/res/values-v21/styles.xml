@@ -1,0 +1,90 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+
+
+    <style name="AppPersonalizedTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary700</item>
+        <item name="colorPrimaryDark">@color/colorPrimary800</item>
+        <item name="colorAccent">@color/colorSecondary800</item>
+        <item name="android:windowBackground">@color/colorBackground</item>
+
+        <item name="windowActionModeOverlay">true</item>
+        <item name="actionModeBackground">@color/colorPrimary700</item>
+        <item name="android:windowContentOverlay">@color/colorAccent</item>
+        <item name="android:dialogTheme">@style/CustomDialog</item>
+
+        <item name="android:spinnerItemStyle">@style/SpinnerLightTextTheme</item>
+    </style>
+
+    <style name="AppQuizTheme" parent="AppPersonalizedTheme.NoActionBar">
+        <item name="android:spinnerItemStyle">@style/SpinnerDarkTextTheme</item>
+    </style>
+
+    <style name="SpinnerDarkTextTheme" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/spinner_text</item>
+    </style>
+
+    <style name="SpinnerLightTextTheme" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <!--<style name="SpinnerLightItemTheme" parent="@android:style/Widget.Holo.DropDownItem">-->
+        <!--<item name="android:textSize">18sp</item>-->
+        <!--<item name="android:textColor">@android:color/white</item>-->
+    <!--</style>-->
+
+
+
+    <style name="CustomDialog" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="android:windowNoTitle">false</item>
+    </style>
+
+    <style name="MenuItemTheme" parent="AppPersonalizedTheme">
+        <item name="android:listPreferredItemHeightSmall">40dp</item>
+    </style>
+
+    <style name="ToolbarTheme" parent="AppPersonalizedTheme">
+        <item name="actionBarSize">15dp</item>
+    </style>
+
+    <style name="AppPersonalizedTheme.NoActionBar" parent="AppPersonalizedTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
+
+    <!-- below styles are for the EditText present in the CategoryDetail layout file -->
+    <style name="TextInputLayoutAppearance" parent="Widget.Design.TextInputLayout">
+        <item name="hintTextAppearance">@style/HintText</item>
+        <item name="errorTextAppearance">@style/ErrorText</item>
+
+        <item name="colorControlNormal">@android:color/transparent</item>
+        <item name="colorControlActivated">@color/colorSecondary500</item>
+        <item name="colorControlHighlight">@color/colorSecondary800</item>
+    </style>
+    <style name="HintText" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@android:color/darker_gray</item>
+        <item name="android:textSize">5sp</item>
+    </style>
+    <style name="ErrorText" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/red800</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+
+</resources>

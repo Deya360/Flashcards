@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Coursework</string>
+    <string name="app_display_name">Flashcards</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="fragment_categories_tag">categoriesFrag</string>
+    <string name="fragment_words_tag">wordsFrag</string>
+    <string name="fragment_categories_detail_tag">categoriesDetailFrag</string>
+    <string name="fragment_word_detail_tag">wordDetailFrag</string>
+    <string name="fragment_statistics_tag">statisticsFrag</string>
+    <string name="dialog_new_category_tag">newCategoryDialog</string>
+
+</resources>
