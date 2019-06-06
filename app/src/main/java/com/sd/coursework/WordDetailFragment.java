@@ -3,12 +3,13 @@ package com.sd.coursework;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,7 +33,9 @@ import com.sd.coursework.API.Suggestion;
 import com.sd.coursework.Database.Entity.Word;
 import com.sd.coursework.Database.VM.CategoryViewModel;
 import com.sd.coursework.Database.VM.WordViewModel;
+import com.sd.coursework.Utils.Adapters.QuerySuggestionAdapter;
 import com.sd.coursework.Utils.Adapters.SuggestionAdapter;
+import com.sd.coursework.Utils.InternetAccessCheck;
 import com.sd.coursework.Utils.ListenerBoolWrapper;
 import com.sd.coursework.Utils.UI.EmptySupportedRecyclerView;
 
@@ -49,6 +52,7 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
     WordViewModel wordViewModel;
     CategoryViewModel categoryViewModel;
     SuggestionAdapter adapter;
+    QuerySuggestionAdapter queryAdapter;
     SuggestionFetcher fetcher;
     boolean expandMenuState = false;
     int operationMode;
@@ -95,10 +99,19 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
 
             }
         });
-        recyclerView.setAdapter(adapter);
+//        recyclerView.setAdapter(adapter);
+
+        queryAdapter = new QuerySuggestionAdapter(new QuerySuggestionAdapter.QuerySuggestionAdapterListner() {
+            @Override
+            public void setWord(String word) {
+                wordEt.setText(word);
+                recyclerView.setAdapter(adapter);
+                loadSuggestions();
+            }
+        });
 
         //Set Loading Progress Bar view, for when data is loading
-        ProgressBar emptyProgressView = (ProgressBar)getActivity().findViewById(R.id.nw_empty_progress_view);
+        ProgressBar emptyProgressView = getActivity().findViewById(R.id.nw_empty_progress_view);
         recyclerView.setPlaceHolderView(emptyProgressView);
 
         //Init views
@@ -129,7 +142,7 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
                         if (!expandMenuState) {
                             toggleMenuState(true);
                         } else {
-                            fetchSuggestions();
+                            loadSuggestions();
                         }
                     }
                 }
@@ -170,10 +183,13 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
 
                             operationMode = OPERATION_UPDATE;
                             getActivity().setTitle("Word Detail");
+                            toggleMenuState(false);
                             Toast.makeText(getContext(), "Word Added", Toast.LENGTH_SHORT).show();
 
                         } else {
-                            getActivity().onBackPressed();
+//                            if (savedInstanceState==null) { //TODO FIX BUG
+                                getActivity().onBackPressed();
+//                            }
                         }
 
                     } else {
@@ -188,7 +204,7 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
                                 needsUpdate = true;
                             }
 
-                            if (needsUpdate) { /* Update only if changed, either alone or both fields together */
+                            if (needsUpdate) { /* Update only if changed, either alone separately or both fields together */
                                 wordViewModel.update(wordViewModel.getWord().getValue());
                                 wordViewModel.getWord(wordId);
                                 Toast.makeText(getContext(), "Word Updated", Toast.LENGTH_SHORT).show();
@@ -206,15 +222,6 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
             }
         });
 
-        // Restore any state (in case of screen rotation)
-        if (savedInstanceState!=null){
-            nw_editMode.setState(savedInstanceState.getBoolean("nw_editMode"));
-            expandMenuState = savedInstanceState.getBoolean("expandMenuState");
-            if (expandMenuState) toggleMenuState(true);
-
-            ((FloatingActionButton)getActivity().findViewById(R.id.fab)).hide(); //Hot fix
-        }
-
         // Get passed bundle from parent argument
         if (getArguments()!= null) {
             wordId = getArguments().getInt("wordId");
@@ -223,7 +230,6 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
 
         // bind data view model
         wordViewModel = ViewModelProviders.of(getActivity()).get(WordViewModel.class);
-        wordViewModel.getWord(wordId);
         wordViewModel.getWord().observe(this, new Observer<Word>() {
             @Override
             public void onChanged(@Nullable Word word) {
@@ -233,6 +239,18 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
                 }
             }
         });
+        wordViewModel.getWord(wordId);
+
+
+        // Restore any state (in case of screen rotation)
+        if (savedInstanceState!=null){
+            operationMode = savedInstanceState.getInt("operationMode");
+            nw_editMode.setState(savedInstanceState.getBoolean("nw_editMode"));
+            expandMenuState = savedInstanceState.getBoolean("expandMenuState");
+            if (expandMenuState) toggleMenuState(true);
+
+        }
+
 
         if (getArguments()!= null) {
             if (wordId != -1) {
@@ -259,19 +277,21 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
             public void onChange(ArrayList<ResultQuery.SummarizedSuggestion> suggestions) {
                 setViewAdapter(suggestions);
             }
+
+            @Override
+            public void onQueryChange(ArrayList<String> querySuggestions) {
+                setQueryViewAdapter(querySuggestions);
+            }
         });
 
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
-        if (fab.isShown())
-            fab.hide();
+        fab.hide();
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.nw_headerLy:
-                toggleMenuState(!expandMenuState);
-                break;
+        if (v.getId() == R.id.nw_headerLy) {
+            toggleMenuState(!expandMenuState);
         }
     }
 
@@ -279,7 +299,7 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
         if (newState) {
             expandIv.setBackgroundResource(R.drawable.ic_expand_less);
             contentLy.setVisibility(View.VISIBLE);
-            fetchSuggestions();
+            loadSuggestions();
         } else {
             expandIv.setBackgroundResource(R.drawable.ic_expand_more);
             contentLy.setVisibility(View.GONE);
@@ -303,25 +323,73 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
         if (fab.isShown()) fab.hide();
     }
 
-    private void fetchSuggestions() {
-        if (!ResultQuery.getQuery().equals(wordEt.getText().toString())
+    private void loadSuggestions() {
+        /* we circumvent unnecessary data fetches, by only processing new fetch requests*/
+        if (!ResultQuery.getQuery().equalsIgnoreCase(wordEt.getText().toString())
             && !wordEt.getText().toString().trim().equals("")) {
-            fetcher = new SuggestionFetcher(new Suggestion.OnTaskCompleted() {
-                @Override
-                public void onTaskCompleted(Boolean success) {
-                    ResultQuery.postUpdate();
-                }
-            });
-            fetcher.execute(wordEt.getText().toString());
 
-        } else {
+            if (getActivity()!=null) {
+                // Check for network connection
+                ConnectivityManager cm = (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo netInfo = cm.getActiveNetworkInfo();
+
+                // Network connection maybe available, however there may not be any connection,
+                // so, If network connection is available, then check if network accesses is available too
+                if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+                    new InternetAccessCheck(internet -> {
+                        //Callback
+                        if (internet) {
+                            fetchSuggestions();
+
+                        } else {
+                            Toast.makeText(getContext(), "Can't connect to the server", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return;
+                } else {
+                    Toast.makeText(getContext(), "Can't connect to the Internet", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+
+        if (!ResultQuery.isIsWordASuggestion()) {
             setViewAdapter(ResultQuery.getSummarizedSuggestions());
+        } else {
+            setQueryViewAdapter(ResultQuery.getQuerySuggestions());
         }
     }
 
+    private void fetchSuggestions () {
+        fetcher = new SuggestionFetcher(new Suggestion.OnTaskCompleted() {
+            @Override
+            public void onTaskCompleted(Boolean success) {
+                ResultQuery.postUpdate();
+            }
+        });
+        recyclerView.setAdapter(null);
+        ProgressBar emptyProgressView = getActivity().findViewById(R.id.nw_empty_progress_view);
+        recyclerView.setPlaceHolderView(emptyProgressView);
+        fetcher.execute(wordEt.getText().toString());
+    }
+
     private void setViewAdapter(ArrayList<ResultQuery.SummarizedSuggestion> suggestions) {
+        recyclerView.setAdapter(adapter);
         adapter.setWords(suggestions);
         if (suggestions.size() == 0) {
+            recyclerView.setEmptyView(emptyView);
+
+        } else {
+            if (getActivity()!=null) {
+                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(definitionEt.getWindowToken(), 0);
+            }
+        }
+    }
+
+    private void setQueryViewAdapter(ArrayList<String> querySuggestions) {
+        recyclerView.setAdapter(queryAdapter);
+        queryAdapter.setWords(querySuggestions);
+        if (querySuggestions.size() == 0) {
             recyclerView.setEmptyView(emptyView);
 
         } else {
@@ -338,8 +406,8 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
 
         outState.putInt("wordId", wordId);
         outState.putInt("categoryId",categoryId);   // Needed only for adding new words
+        outState.putInt("operationMode",operationMode);
         outState.putBoolean("expandMenuState", expandMenuState);
-//        outState.putInt("operationMode", operationMode);
         outState.putBoolean("nw_editMode", nw_editMode.getState());
     }
 
@@ -361,10 +429,11 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
-        inflater.inflate(R.menu.cat_main_bar, menu);
+        inflater.inflate(R.menu.worddet_main_bar, menu);
 
         boolean visible = nw_editMode.getState();
         menu.findItem(R.id.action_edit).setVisible(!visible);
+        menu.findItem(R.id.action_add).setVisible(!visible);
         menu.findItem(R.id.action_apply).setVisible(visible);
     }
 
@@ -395,6 +464,18 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
                 }
 
                 return true;
+
+            case R.id.action_add:
+                operationMode = OPERATION_NEW;
+                nw_editMode.setState(true);
+                wordId = -1;
+                getActivity().setTitle("New Word");
+                ResultQuery.clear();
+                ResultQuery.postUpdate();
+                wordEt.setText("");
+                definitionEt.setText("");
+                wordEt.requestFocus();
+
         }
 
         return super.onOptionsItemSelected(item);

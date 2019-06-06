@@ -67,6 +67,9 @@ public class EmptySupportedRecyclerView extends RecyclerView {
     }
 
     public void setPlaceHolderView (View placeHolderView) {
+        if (this.emptyView != null) {
+            this.emptyView.setVisibility(GONE);
+        }
         this.emptyView = placeHolderView;
         emptyView.setVisibility(VISIBLE);
     }

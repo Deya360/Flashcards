@@ -3,41 +3,67 @@ package com.sd.coursework.API;
 import java.util.ArrayList;
 
 public class ResultQuery {
-    private static ArrayList<Suggestion> words = new ArrayList<>();
+    private static ArrayList<Suggestion> suggestions = new ArrayList<>();
+    private static ArrayList<String> querySuggestions = new ArrayList<>();
     private static ArrayList<ChangeListener> listeners = new ArrayList<>();
+
+    private static boolean isWordASuggestion = false;
     private static String query = "";
 
     public static String getQuery() {
         return query;
     }
-
     public static void setQuery(String query) {
         ResultQuery.query = query;
     }
 
+    public static ArrayList<Suggestion> getSuggestions() {
+        return suggestions;
+    }
+    public static void addSuggestion(Suggestion suggestion) {
+        suggestions.add(suggestion);
+    }
 
-    public static void addWord(Suggestion word) {
-        words.add(word);
+
+    public static boolean isIsWordASuggestion() {
+        return isWordASuggestion;
+    }
+    public static void setIsWordASuggestion(boolean isWordASuggestion) {
+        if (ResultQuery.isIsWordASuggestion()!=isWordASuggestion) {
+            ResultQuery.isWordASuggestion = isWordASuggestion;
+            if (!isWordASuggestion) querySuggestions.clear();
+        }
+    }
+
+    public static ArrayList<String> getQuerySuggestions() {
+        return querySuggestions;
+    }
+    public static void addQuerySuggestions(String querySuggestion) {
+        ResultQuery.querySuggestions.add(querySuggestion);
+    }
+
+    public static void clear() {
+        suggestions.clear();
+        querySuggestions.clear();
     }
 
     public static void postUpdate() {
         if (listeners.size()!=0) {
-            ArrayList<SummarizedSuggestion> ss = getSummarizedSuggestions();
+            if (!isIsWordASuggestion()) {
+                ArrayList<SummarizedSuggestion> ss = getSummarizedSuggestions();
 
-            for (ChangeListener l : listeners) {
-                if (l != null) l.onChange(ss);
+                for (ChangeListener l : listeners) {
+                    if (l != null) l.onChange(ss);
+                }
+
+            } else {
+                for (ChangeListener l : listeners) {
+                    if (l != null) l.onQueryChange(querySuggestions);
+                }
             }
+
         }
     }
-
-    public static ArrayList<Suggestion> getSuggestions() {
-        return words;
-    }
-    public static void clear() {
-        words.clear();
-    }
-
-
 
     public static class SummarizedSuggestion {
         private int[] tracker; //technical variable
@@ -74,8 +100,8 @@ public class ResultQuery {
     public static ArrayList<SummarizedSuggestion> getSummarizedSuggestions() {
         ArrayList<SummarizedSuggestion> summarizedSuggestions = new ArrayList<>();
 
-        for (int i = 0; i < words.size(); i++) {
-            Suggestion sw = words.get(i);
+        for (int i = 0; i < suggestions.size(); i++) {
+            Suggestion sw = suggestions.get(i);
             String dict = sw.getDictionary();
 
             ArrayList<Suggestion.Meta> definitions = sw.getDefinitions();
@@ -111,5 +137,6 @@ public class ResultQuery {
 
     public interface ChangeListener {
         void onChange(ArrayList<SummarizedSuggestion> suggestions);
+        void onQueryChange(ArrayList<String> querySuggestions);
     }
 }

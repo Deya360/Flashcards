@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -23,7 +22,6 @@ import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.sd.coursework.Database.Entity.Category;
 import com.sd.coursework.Database.Entity.Result;
@@ -135,7 +133,7 @@ public class QuizActivity extends AppCompatActivity {
 
         initWVM();
         setupLy.setVisibility(GONE);
-        startFadeUpAnim(contentLy,200);
+        startFadeUpAnim(contentLy,200, contentLy.getHeight());
         initUI();
     }
 
@@ -191,12 +189,21 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
-        adapter = new QuizAdapter(this, new QuizAdapter.AdapterListener() {
+        adapter = new QuizAdapter(this, (int)wordAmountSp.getSelectedItem(), new QuizAdapter.QuizAdapterListener() {
             @Override
             public void notifyFlipped(int position) {
                 if (position == reachedFlag && answerState == ANSWER_INDETERMINATE) {
                     setWrong();
                 }
+            }
+
+            @Override
+            public void showDetailedDialog(String word, String def) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(QuizActivity.this);
+                builder.setTitle(word)
+                        .setMessage(def)
+                        .setPositiveButton("Done", null)
+                        .show();
             }
         });
         viewPager.setAdapter(adapter);
@@ -209,6 +216,9 @@ public class QuizActivity extends AppCompatActivity {
             if (answerState!=ANSWER_INDETERMINATE) {
                 if (reachedFlag!=items.size()) {
                     setIndeterminate();
+
+                    if (reachedFlag+1==items.size())
+                        nextBtn.setImageResource(R.drawable.icon_finish);
 
                 } else { // Quiz Complete
                     ResultViewModel resultViewModel = ViewModelProviders.of(this).get(ResultViewModel.class);
@@ -231,7 +241,7 @@ public class QuizActivity extends AppCompatActivity {
                                 categoryViewModel.getById().getValue().setLearnedWordCnt(correctCounter);
                                 categoryViewModel.update(categoryViewModel.getById().getValue());
 
-                                startStatisticsFragment(categoryId,integer);
+                                startStatisticsDetailFragment(categoryId,integer);
 
                                 setResult(Activity.RESULT_OK);
                                 finish();
@@ -261,7 +271,7 @@ public class QuizActivity extends AppCompatActivity {
         });
     }
 
-    private void startStatisticsFragment(int categoryId, int resId) {
+    private void startStatisticsDetailFragment(int categoryId, int resId) {
 
     }
 
@@ -272,10 +282,10 @@ public class QuizActivity extends AppCompatActivity {
         toggleButtons(false);
     }
 
-    private void startFadeUpAnim(View view, int startDelay) {
+    private void startFadeUpAnim(View view, int startDelay, int height) {
         view.setVisibility(View.VISIBLE);
         view.setAlpha(0.0f);
-        view.setTranslationY(view.getMeasuredHeight());
+        view.setTranslationY(height);
 
         view.animate()
                 .setStartDelay(startDelay)
@@ -303,8 +313,8 @@ public class QuizActivity extends AppCompatActivity {
                     adapter.setItems(items.subList(0,reachedFlag+1));
                     updateInfoViews();
 
-                    if (vpPos == -1) {
-                        viewPager.setCurrentItem(reachedFlag);
+                    if (vpPos == -1) {  // this means that this is a new session
+                        viewPager.setCurrentItem(reachedFlag); // reached flag is zero
 
                     } else {
                         //Because Viewpager doesn't call necessary methods when page doesn't change
@@ -314,7 +324,6 @@ public class QuizActivity extends AppCompatActivity {
                         } else {
                             viewPager.setCurrentItem(vpPos);
                         }
-
                     }
                 }
             }
@@ -324,7 +333,6 @@ public class QuizActivity extends AppCompatActivity {
     private void updateViewPager() {
         if (items != null) {
             if (reachedFlag+1>items.size()) {
-                Toast.makeText(this, "DEBUG: QUIZ DONE", Toast.LENGTH_SHORT).show();
                 return;
             }
             adapter.addItem(items.get(reachedFlag));
@@ -357,7 +365,7 @@ public class QuizActivity extends AppCompatActivity {
     private void updateInfoViews() {
         correctCounterTv.setText(String.valueOf(correctCounter));
         wrongCounterTv.setText(String.valueOf(wrongCounter));
-        wordsLeftTv.setText("Words Left: " + (items.size()-reachedFlag));
+        wordsLeftTv.setText("Cards Left: " + (items.size()-reachedFlag));
     }
 
     private void toggleButtons(boolean state) {
@@ -365,9 +373,10 @@ public class QuizActivity extends AppCompatActivity {
         wrongBtn.setEnabled(state);
 
         if (!state) {
-            if (stats.size()-1==reachedFlag) {
-                startFadeUpAnim(nextBtn,0);
-
+            if (stats.size()==adapter.getCount() && reachedFlag!=items.size()) {
+                startFadeUpAnim(nextBtn,0,
+                                (int)getResources().getDimension(R.dimen.quiz_activity_next_btn_diameter));
+                adapter.getCount();
             } else {
                 nextBtn.setVisibility(View.VISIBLE);
             }
@@ -429,7 +438,9 @@ public class QuizActivity extends AppCompatActivity {
         outState.putInt("correctCounter",correctCounter);
         outState.putInt("wrongCounter",wrongCounter);
         outState.putInt("answerState",answerState);
-        outState.putInt("vpPos",viewPager.getCurrentItem());
+        if (viewPager!=null) {
+            outState.putInt("vpPos",viewPager.getCurrentItem());
+        }
 
         super.onSaveInstanceState(outState);
     }

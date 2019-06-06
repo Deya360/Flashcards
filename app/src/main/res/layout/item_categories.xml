@@ -47,7 +47,8 @@
             android:layout_toStartOf="@id/cat_drag_handleIv"
 
             android:padding="12dp"
-            android:paddingEnd="4dp">
+            android:paddingEnd="4dp"
+            >
 
             <TextView
                 android:id="@+id/cat_wordCountTv"

@@ -8,10 +8,13 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.internal.NavigationMenu;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -19,15 +22,19 @@ import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.TooltipCompat;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.ActionMode;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -53,6 +60,7 @@ import com.sd.coursework.Utils.UI.ItemMoveCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -168,6 +176,27 @@ public class CategoryDetailFragment extends Fragment{
             }
         });
 
+        progressLy.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Category category = categoryViewModel.getById().getValue();
+                if (category==null || categoryViewModel.getById().getValue().getWordCount() < 1) {
+                    return false;
+                }
+
+                float percent = ((float)category.getLearnedWordCnt()/category.getWordCount())*100;
+                String text = "Progress: " + category.getLearnedWordCnt() + "/" + category.getWordCount()
+                                + " (" + String.format(Locale.getDefault(),"%.2f",percent) + "%)";
+
+                Toast toast= Toast.makeText(getContext(), text, Toast.LENGTH_LONG);
+
+                toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 525);
+                toast.show();
+
+                return true;
+            }
+        });
+
         // bind data view model
         wordViewModel = ViewModelProviders.of(getActivity()).get(WordViewModel.class);
         wordViewModel.getAllByCategoryId().observe(this, new Observer<List<Word>>() {
@@ -271,7 +300,16 @@ public class CategoryDetailFragment extends Fragment{
                 wordViewModel.deleteDiscrete(itemsList);
                 wordViewModel.getAllByCategoryId(currentId);
                 categoryViewModel.updateWordCount(currentId,-1*itemsList.size());
+
+                Category category = categoryViewModel.getById().getValue();
+                if (category!=null) { /* This ensures we don't get test percentage of over 100 */
+                    if (category.getWordCount() < category.getLearnedWordCnt()) {
+                        category.setLearnedWordCnt(category.getLearnedWordCnt());
+                        categoryViewModel.update(category);
+                    }
+                }
                 categoryViewModel.getById(currentId);
+
                 catdet_editMode.setState(false);
                 Toast.makeText(view.getContext(), itemsList.size() + " Item" +((itemsList.size()==1)? "":"s")+ " deleted",
                         Toast.LENGTH_SHORT).show();
@@ -425,7 +463,6 @@ public class CategoryDetailFragment extends Fragment{
 
     }
 
-    private int progress = 0;
     void setupParentUI() {
         setHasOptionsMenu(true);
 
@@ -433,6 +470,10 @@ public class CategoryDetailFragment extends Fragment{
         getActivity().setTitle("Category Detail");
 
         categoryViewModel = ViewModelProviders.of(this).get(CategoryViewModel.class);
+
+        // Set current tab in navigation view
+        NavigationView menu = getActivity().findViewById(R.id.nav_view);
+        menu.setCheckedItem(R.id.catTab);
 
         // Implement floating action button functionality
         fab = getActivity().findViewById(R.id.fab);
@@ -537,6 +578,23 @@ public class CategoryDetailFragment extends Fragment{
                             }).show();
                 }
                 return true;
+
+            case R.id.action_stats:
+                String tag = getResources().getString(R.string.fragment_statistics_tag);
+                FragmentManager manager = getActivity().getSupportFragmentManager();
+                Fragment fragment = manager.findFragmentByTag(tag);
+                if (fragment == null) fragment = new StatisticsFragment();
+
+                /* pass the position in a bundle */
+                Bundle bundle = new Bundle();
+                bundle.putInt("categoryId",currentId);
+                fragment.setArguments(bundle);
+
+                manager.beginTransaction()
+                        .setCustomAnimations(R.anim.slide_fade_in, R.anim.slide_fade_out, R.anim.slide_fade_in, R.anim.slide_fade_out)
+                        .replace(R.id.main_layout, fragment, tag)
+                        .addToBackStack(getResources().getString(R.string.fragment_categories_detail_tag))
+                        .commit();
         }
 
         return super.onOptionsItemSelected(item);

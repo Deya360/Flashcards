@@ -34,6 +34,7 @@ public class StatisticsFragment extends Fragment{
     private ArrayAdapter<String> spinnerAdapter;
     private CategoryViewModel categoryViewModel;
     private ResultViewModel resultViewModel;
+    private int preSelectedCategoryId = -1;
     private int selectedItemIdx = 0;
 
     EmptySupportedRecyclerView recyclerView;
@@ -49,6 +50,10 @@ public class StatisticsFragment extends Fragment{
         super.onViewCreated(view, savedInstanceState);
 
         setupUI();
+
+        if (getArguments()!=null) {
+            preSelectedCategoryId = getArguments().getInt("categoryId");
+        }
 
         if (savedInstanceState!=null){
             selectedItemIdx = savedInstanceState.getInt("selectedItemIdx");
@@ -114,7 +119,7 @@ public class StatisticsFragment extends Fragment{
         resultViewModel.getAllByCategoryId().observe(this, new Observer<List<Result>>() {
             @Override
             public void onChanged(@Nullable List<Result> results) {
-                if (results!=null) {
+                if (results!=null && selectedItemIdx!=0) {
                     adapter.setResults(results);
 
                     if(results.size()==0) {
@@ -138,7 +143,7 @@ public class StatisticsFragment extends Fragment{
         menu.setCheckedItem(R.id.statTab);
 
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
-        if (fab.isShown()) fab.hide();
+        fab.hide();
     }
 
 
@@ -165,6 +170,18 @@ public class StatisticsFragment extends Fragment{
                 }
             }
         });
+
+        if (preSelectedCategoryId != -1 && categoryViewModel.getAllCategories().getValue()!=null) {
+            List<Category> value = categoryViewModel.getAllCategories().getValue();
+            for (int i = 0; i < value.size(); i++) {
+                Category cat = value.get(i);
+                if (cat.getId() == preSelectedCategoryId) {
+                    selectedItemIdx = i+1;  // +1 because we have a first item default value in the spinner
+                    preSelectedCategoryId = -1;
+                    break;
+                }
+            }
+        }
 
         categorySp.setSelection(selectedItemIdx);
     }

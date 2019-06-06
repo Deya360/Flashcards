@@ -1,5 +1,8 @@
 package com.sd.coursework.API;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 
 import com.sd.coursework.BuildConfig;
@@ -15,6 +18,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import static android.support.v4.content.ContextCompat.getSystemService;
 
 public class SuggestionFetcher extends AsyncTask<String,Void,Boolean> {
     private final String API_KEY = BuildConfig.APIKEY1;
@@ -52,56 +57,64 @@ public class SuggestionFetcher extends AsyncTask<String,Void,Boolean> {
                 JSONArray arr = new JSONArray(jsonSB.toString());
                 mainLoop: for (int i = 0; i <arr.length(); i++) {
                     Object json = new JSONTokener(arr.get(i).toString()).nextValue();
-                    if (!(json instanceof JSONObject)) {
+                    if (json instanceof JSONObject) { //Got a concrete result
+                        JSONObject obj = arr.optJSONObject(i);
+
+                        if (obj!=null && obj.has("meta")) {
+                            JSONObject objMeta = obj.getJSONObject("meta");
+
+                            Suggestion word = new Suggestion(DICT_NAME);
+                            Suggestion.Meta meta = word.new Meta();
+                            String[] id = objMeta.opt("id").toString().split(":");
+
+                            switch (id.length) {
+                                case 2:
+                                    meta.wordNumber = id[1];
+                                    //fall through
+
+                                case 1:
+                                    meta.wordName = id[0];
+                                    meta.functionalLabel = obj.optString("fl");
+                                    break;
+
+                                default:
+                                    continue; //if response doesn't have id, then something is wrong, therefore skip
+                            }
+
+                            if (obj.has("def")) {
+                                JSONArray defArr = obj.getJSONArray("def");
+
+                                for (int j = 0; j <defArr.length(); j++) {
+                                    JSONObject defObj = defArr.getJSONObject(j);
+                                    String sharedVD = (String)defObj.opt("vd");
+
+                                    if (defObj.has("sseq")) {
+                                        JSONArray seqArr = defObj.getJSONArray("sseq");
+
+                                        for (int k = 0; k <seqArr.length(); k++) {
+                                            JSONArray senseArr = seqArr.getJSONArray(k);
+
+                                            parseSenses(word, meta, sharedVD,senseArr);
+                                            if (isCancelled()) break mainLoop;
+                                        }
+                                    }
+                                }
+
+                                word.addDefinition(meta);
+                                ResultQuery.addSuggestion(word);
+                                ResultQuery.setIsWordASuggestion(false);
+                            }
+                        }
+
+                    } else if (json instanceof String) { //No result, but got a list of possible words (most likely there was a spelling error)
+                        ResultQuery.setIsWordASuggestion(true);
+                        ResultQuery.addQuerySuggestions(arr.optString(i));
+
+                    } else { //Unknown
                         break;
                     }
 
-                    JSONObject obj = arr.optJSONObject(i);
 
-                    if (obj!=null && obj.has("meta")) {
-                        JSONObject objMeta = obj.getJSONObject("meta");
-
-                        Suggestion word = new Suggestion(DICT_NAME);
-                        Suggestion.Meta meta = word.new Meta();
-                        String[] id = objMeta.opt("id").toString().split(":");
-
-                        switch (id.length) {
-                            case 2:
-                                meta.wordNumber = id[1];
-                                //fall through
-
-                            case 1:
-                                meta.wordName = id[0];
-                                meta.functionalLabel = obj.optString("fl");
-                                break;
-
-                            default:
-                                continue; //if response doesn't have id, then something is wrong, therefore skip
-                        }
-
-                        if (obj.has("def")) {
-                            JSONArray defArr = obj.getJSONArray("def");
-
-                            for (int j = 0; j <defArr.length(); j++) {
-                                JSONObject defObj = defArr.getJSONObject(j);
-                                String sharedVD = (String)defObj.opt("vd");
-
-                                if (defObj.has("sseq")) {
-                                    JSONArray seqArr = defObj.getJSONArray("sseq");
-
-                                    for (int k = 0; k <seqArr.length(); k++) {
-                                        JSONArray senseArr = seqArr.getJSONArray(k);
-
-                                        parseSenses(word, meta, sharedVD,senseArr);
-                                        if (isCancelled()) break mainLoop;
-                                    }
-                                }
-                            }
-
-                            word.addDefinition(meta);
-                            ResultQuery.addWord(word);
-                        }
-                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

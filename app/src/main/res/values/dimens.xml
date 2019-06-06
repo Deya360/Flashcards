@@ -16,4 +16,5 @@
 
     <dimen name="color_swatch">56dp</dimen>
     <dimen name="color_swatch_margins">4dp</dimen>
+    <dimen name="quiz_activity_next_btn_diameter">90dp</dimen>
 </resources>

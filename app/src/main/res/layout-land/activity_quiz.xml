@@ -174,7 +174,10 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_toEndOf="@id/q_cardVp"
-                android:paddingBottom="30dp">
+
+                android:paddingBottom="30dp"
+                android:clipToPadding="false"
+                android:clipChildren="false">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -182,8 +185,10 @@
                     android:layout_marginBottom="70dp"
                     android:layout_alignWithParentIfMissing="true"
                     android:layout_above="@id/q_nextBtn"
+
                     android:clipToPadding="false"
-                    android:gravity="center">
+                    android:clipChildren="false"
+                    android:gravity="center" >
 
                     <com.sd.coursework.Utils.UI.CircleButton
                         android:id="@+id/q_wrongBtn"
@@ -195,6 +200,7 @@
                         android:focusable="true"
                         android:foreground="?attr/actionBarItemBackground"
                         android:src="@drawable/ic_wrong_white_48dp"
+                        android:tooltipText="Can't remember!"
 
                         app:cb_color="#F4511E"
                         app:cb_pressedRingWidth="6dp"
@@ -207,8 +213,12 @@
                         android:layout_centerInParent="true"
                         android:layout_marginStart="25dp"
                         android:layout_toEndOf="@+id/q_wrongBtn"
-                        android:clipToPadding="false"
+
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/actionBarItemBackground"
                         android:background="@drawable/circular_button_back"
+                        android:tooltipText="I know it!"
 
                         app:sparkbutton_pressOnTouch="true"
                         app:sparkbutton_activeImage="@drawable/ic_correct_white_48dp"
@@ -229,15 +239,14 @@
                     android:layout_centerHorizontal="true"
                     android:layout_alignParentBottom="true"
 
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/actionBarItemBackground"
                     android:src="@drawable/icon_step_forward_white_48dp"
-                    android:visibility="visible"
 
                     app:cb_color="@color/colorSecondary500"
                     app:cb_pressedRingWidth="9dp"
-                    app:cb_animTime="750"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:background="?attr/actionBarItemBackground"/>
+                    app:cb_animTime="750" />
 
             </RelativeLayout>
 
