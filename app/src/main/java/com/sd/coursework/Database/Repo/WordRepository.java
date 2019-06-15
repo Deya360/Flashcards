@@ -3,8 +3,8 @@ package com.sd.coursework.Database.Repo;
 import android.app.Application;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.content.Intent;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.util.SparseIntArray;
 
 import com.sd.coursework.Database.DAO.WordDAO;
@@ -17,6 +17,7 @@ import java.util.List;
 
 interface AsyncWordResponse {
     void wordFetchFinish(Word returnData);
+    void wordsFetchFinish(List<WordLite> returnData);
     void queryFetchFinish(List<Word> returnData);
     void queryFetchFinishLite(List<WordLite> returnData);
     void queryInsertFinish(int insertedId);
@@ -26,6 +27,7 @@ public class WordRepository implements AsyncWordResponse {
     private WordDAO wordDAO;
     private LiveData<List<WordPlus>> allWords;
     private MutableLiveData<Word> word  = new MutableLiveData<>();
+    private MutableLiveData<List<WordLite>> words  = new MutableLiveData<>();
     private MutableLiveData<List<Word>> allWordsInCategory = new MutableLiveData<>();
     private MutableLiveData<List<WordLite>> allWordsInCategoryLite = new MutableLiveData<>();
     private MutableLiveData<Integer> lastId  = new MutableLiveData<>();
@@ -211,6 +213,38 @@ public class WordRepository implements AsyncWordResponse {
     }
     public MutableLiveData<Word> getById() {
         return word;
+    }
+
+    public void getByIds(List<Integer> ids) {
+        new SelectByIdsAsyncTask(wordDAO, ids, this).execute();
+    }
+    private static class SelectByIdsAsyncTask extends AsyncTask<Void, Void, List<WordLite>> {
+        private AsyncWordResponse delegate;
+        private WordDAO wordDAO;
+        private List<Integer> ids;
+
+        SelectByIdsAsyncTask(WordDAO wordDAO, List<Integer> wordIds, AsyncWordResponse delegate) {
+            this.wordDAO = wordDAO;
+            this.ids = wordIds;
+            this.delegate = delegate;
+        }
+
+        @Override
+        protected List<WordLite> doInBackground(Void... voids) {
+            String ids2 = "," + TextUtils.join(",", ids) + ",";
+            return wordDAO.getByIds(ids, ids2);
+        }
+
+        @Override
+        protected void onPostExecute(List<WordLite> wordLite) {
+            delegate.wordsFetchFinish(wordLite);
+        }
+    }
+    @Override public void wordsFetchFinish(List<WordLite> returnData) {
+        this.words.setValue(returnData);
+    }
+    public MutableLiveData<List<WordLite>> getByIds() {
+        return words;
     }
 
     public void updateListPositions(SparseIntArray arr) {

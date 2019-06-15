@@ -19,7 +19,7 @@ public class StatisticsAdapter extends RecyclerView.Adapter<StatisticsAdapter.St
     private List<Result> results = new ArrayList<>();
 
     public interface StatisticsAdapterListener {
-        void startStatisticDetailFrag(int pos);
+        void startStatisticDetailFrag(int resId);
     }
 
     @NonNull
@@ -66,13 +66,13 @@ public class StatisticsAdapter extends RecyclerView.Adapter<StatisticsAdapter.St
         SimpleDateFormat dateFormat =  new SimpleDateFormat("dd MMM yyyy - HH:mm:ss", Locale.getDefault());
         holder.dateTv.setText(dateFormat.format(currentResult.getTakenTS()));
 
-        int totalWords = (currentResult.getCorrectWordCnt() + currentResult.getWrongWordIds().size());
-        holder.scoreTv.setText(currentResult.getCorrectWordCnt() + "/" + totalWords) ;
+        String totalWords = currentResult.getCorrectWordCnt() + "/" + currentResult.getWordIds().size();
+        holder.scoreTv.setText(totalWords) ;
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                statisticListener.startStatisticDetailFrag(pos);
+                statisticListener.startStatisticDetailFrag(currentResult.getId());
             }
         });
     }

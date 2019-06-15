@@ -1,53 +1,299 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/stat_empty_view1"
+    <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
-        android:visibility="gone"
+        android:layout_height="wrap_content">
 
-        android:fontFamily="@font/varela_round"
-        android:text="No Category Selected!"
-        android:textAlignment="center"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
+        <android.support.design.widget.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
 
-    <TextView
-        android:id="@+id/stat_empty_view2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+            app:titleEnabled="false"
+            android:fitsSystemWindows="true"
 
-        android:fontFamily="@font/varela_round"
-        android:text="There are no results to show!"
-        android:textAlignment="center"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+            android:background="@color/colorBackground"
+            app:contentScrim="@android:color/white"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
-        android:visibility="gone" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-    <ProgressBar
-        android:id="@+id/stat_empty_progress_view"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_marginTop="50dp"
-        android:layout_gravity="center_horizontal"
+                <android.support.v7.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="8dp"
 
-        android:visibility="gone"/>
+                    app:cardElevation="6dp"
+                    app:cardCornerRadius="0dp">
 
-    <com.sd.coursework.Utils.UI.EmptySupportedRecyclerView
-        android:id="@+id/stat_recycler_view"
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="7dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:weightSum="1">
+
+                        <TextView
+                            android:id="@+id/statdet_dateTv"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginTop="2dp"
+
+                            android:ellipsize="end"
+                            android:fontFamily="@font/roboto"
+                            android:maxLines="2"
+                            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                        <TextView
+                            android:id="@+id/statdet_scoreTv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:fontFamily="@font/oswald_bold"
+                            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                    </LinearLayout>
+
+                </android.support.v7.widget.CardView>
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="8dp"
+
+                    app:cardElevation="12dp"
+                    app:cardCornerRadius="0dp">
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp">
+
+                        <View
+                            android:id="@+id/statdet_drop_shadowV"
+                            android:layout_width="match_parent"
+                            android:layout_height="8dp"
+                            android:layout_marginBottom="5dp"
+                            android:background="@drawable/toolbar_drop_shadow" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_below="@id/statdet_drop_shadowV"
+                            android:orientation="horizontal"
+                            android:weightSum="2.1">
+
+                            <RelativeLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_gravity="center_vertical">
+
+                                <ProgressBar
+                                    android:id="@+id/statdet_progressBar"
+                                    android:layout_width="170dp"
+                                    android:layout_height="170dp"
+                                    android:padding="6dp"
+                                    android:layout_centerInParent="true"
+
+                                    android:max="100"
+                                    android:progress="0"
+                                    style="?android:progressBarStyleHorizontal"
+                                    android:progressDrawable="@drawable/circular_progress_bar_thick"
+
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:foreground="?attr/actionBarItemBackground" />
+
+                                <TextView
+                                    android:id="@+id/statdet_progressTv"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerInParent="true"
+
+                                    android:textSize="43sp"
+                                    android:textColor="@color/colorSecondary800"
+                                    android:fontFamily="@font/signika"/>
+
+                            </RelativeLayout>
+
+                            <ImageView
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="0.1"
+
+                                android:src="@drawable/line_vertical_rounded"
+                                android:scaleType="fitXY"
+                                android:tint="#C7C5C5"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_gravity="center_vertical"
+
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:layout_width="64dp"
+                                    android:layout_height="64dp"
+                                    android:layout_gravity="center_horizontal"
+
+                                    android:src="@drawable/icon_check_progress"
+                                    android:tint="#558B2F"/>
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_horizontal"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/statdet_current_indicatorTv"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+
+                                        android:textSize="30sp"
+                                        android:textColor="@android:color/black"
+                                        android:fontFamily="@font/varela_round" />
+
+                                    <TextView
+                                        android:id="@+id/statdet_current_labelTv"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+
+                                        android:fontFamily="@font/roboto_condensed_regular"
+                                        android:text="WORDS"
+                                        android:textColor="@android:color/black"
+                                        android:textSize="18sp" />
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:id="@+id/statdet_previous_indicatorLy"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_horizontal"
+
+                                    android:layout_marginTop="-7dp"
+                                    android:layout_marginBottom="-3dp"
+
+                                    android:tooltipText="compared to score of previous quiz"
+                                    android:orientation="horizontal"
+                                    android:visibility="visible">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+
+                                        android:text="("
+                                        android:textSize="16sp"
+                                        android:textAlignment="center"
+                                        android:textColor="@android:color/black"
+                                        android:fontFamily="@font/roboto" />
+
+                                    <ImageView
+                                        android:id="@+id/statdet_previous_indicatorIv"
+                                        android:layout_width="18dp"
+                                        android:layout_height="24dp"
+                                        android:layout_gravity="center_vertical"
+
+                                        android:src="@drawable/icon_index_unchanged"
+                                        android:scaleType="fitStart"/>
+
+                                    <TextView
+                                        android:id="@+id/statdet_previous_indicatorTv"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+
+                                        android:textSize="16sp"
+                                        android:textAlignment="center"
+                                        android:textColor="@android:color/black"
+                                        android:fontFamily="@font/roboto" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+
+                                        android:text=")"
+                                        android:textSize="16sp"
+                                        android:textAlignment="center"
+                                        android:textColor="@android:color/black"
+                                        android:fontFamily="@font/roboto" />
+
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_horizontal"
+
+                                    android:text="correct words"
+                                    android:textSize="15sp"
+                                    android:textAlignment="center"
+                                    android:fontFamily="@font/varela_round" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
+
+
+                </android.support.v7.widget.CardView>
+
+            </LinearLayout>
+
+        </android.support.design.widget.CollapsingToolbarLayout>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/catdet_card"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="92dp"
-        android:clipToPadding="false"
-        android:scrollbars="vertical"
 
-        tools:listitem="@layout/item_categories">
+        android:fitsSystemWindows="true"
+        app:layout_behavior="android.support.design.widget.AppBarLayout$ScrollingViewBehavior">
 
-    </com.sd.coursework.Utils.UI.EmptySupportedRecyclerView>
+        <ProgressBar
+            android:id="@+id/statdet_empty_progress_view"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:layout_marginTop="50dp"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone"/>
+
+
+        <com.sd.coursework.Utils.UI.EmptySupportedRecyclerView
+            android:id="@+id/statdet_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            android:paddingBottom="92dp"
+            android:clipToPadding="false"
+            tools:listitem="@layout/item_words" />
+
+    </android.support.design.widget.CoordinatorLayout>
 
 </android.support.design.widget.CoordinatorLayout>

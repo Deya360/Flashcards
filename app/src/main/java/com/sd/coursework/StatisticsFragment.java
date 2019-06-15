@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -53,6 +54,7 @@ public class StatisticsFragment extends Fragment{
 
         if (getArguments()!=null) {
             preSelectedCategoryId = getArguments().getInt("categoryId");
+            getArguments().clear();
         }
 
         if (savedInstanceState!=null){
@@ -65,8 +67,21 @@ public class StatisticsFragment extends Fragment{
 
         StatisticsAdapter adapter = new StatisticsAdapter(new StatisticsAdapter.StatisticsAdapterListener() {
             @Override
-            public void startStatisticDetailFrag(int pos) {
+            public void startStatisticDetailFrag(int resId) {
+                String tag = getResources().getString(R.string.fragment_statistics_detail_tag);
+                FragmentManager manager = getActivity().getSupportFragmentManager();
+                Fragment fragment = manager.findFragmentByTag(tag);
+                if (fragment == null) fragment = new StatisticsDetailFragment();
 
+                Bundle bundle = new Bundle();
+                bundle.putInt("resultId",resId);
+                fragment.setArguments(bundle);
+
+                manager.beginTransaction()
+                        .setCustomAnimations(R.anim.slide_fade_in, R.anim.slide_fade_out, R.anim.slide_fade_in, R.anim.slide_fade_out)
+                        .replace(R.id.main_layout, fragment, tag)
+                        .addToBackStack(getResources().getString(R.string.fragment_statistics_tag))
+                        .commit();
             }
         });
         recyclerView.setAdapter(adapter);

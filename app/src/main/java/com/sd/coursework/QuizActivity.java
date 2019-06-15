@@ -5,11 +5,14 @@ import android.app.AlertDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.graphics.ColorUtils;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +34,7 @@ import com.sd.coursework.Database.VM.ResultViewModel;
 import com.sd.coursework.Database.VM.WordViewModel;
 import com.sd.coursework.Utils.Adapters.QuizAdapter;
 import com.sd.coursework.Utils.ListenerIntWrapper;
+import com.sd.coursework.Utils.QuizFeedback;
 import com.sd.coursework.Utils.QuizItem;
 import com.sd.coursework.Utils.UI.CircleButton;
 import com.varunest.sparkbutton.SparkButton;
@@ -41,13 +45,14 @@ import java.util.Collections;
 import java.util.List;
 
 import static android.view.View.GONE;
+import static com.sd.coursework.MainActivity.USE_COLOR_QUIZ_FLASHCARDS;
 
 public class QuizActivity extends AppCompatActivity {
     public static ListenerIntWrapper quiz_FlipCard;
     private final int ANSWER_INDETERMINATE = -1, ANSWER_CORRECT = 1, ANSWER_WRONG = 0;
 
     private boolean onBackWarned = false;
-    private boolean quizBegun;
+    private boolean quizBegun = false;
     private int answerState = ANSWER_INDETERMINATE;
     private int correctCounter =0, wrongCounter =0;
     private int reachedFlag = 0;
@@ -55,6 +60,7 @@ public class QuizActivity extends AppCompatActivity {
 
     private static List<QuizItem> stats;
     private static List<WordLite> items;
+    private List<Integer> wrongWordsArr;
     private int categoryId;
     private QuizAdapter adapter;
     private CategoryViewModel categoryViewModel;
@@ -82,6 +88,7 @@ public class QuizActivity extends AppCompatActivity {
 
         if (getIntent().getExtras()!= null) {
             categoryId = getIntent().getExtras().getInt("categoryId");
+            wrongWordsArr = getIntent().getIntegerArrayListExtra("wrongWordsArr");
         }
 
         //Restore from saved instance state
@@ -107,22 +114,30 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 quizBegun = true;
-
                 initQuiz();
             }
         });
 
         categoryViewModel = ViewModelProviders.of(this).get(CategoryViewModel.class);
-        categoryViewModel.getById(categoryId);
         categoryViewModel.getById().observe(this, new Observer<Category>() {
             @Override
             public void onChanged(@Nullable Category category) {
                 if (category != null) {
                     setTitle("Quiz: " + category.getName());
-                    initSpinner(category.getWordCount());
+
+                    if (!quizBegun) {
+                        if (wrongWordsArr!=null && wrongWordsArr.size()!=0) {
+                            quizBegun = true;
+                            initQuiz();
+
+                        } else {
+                            initSpinner(category.getWordCount());
+                        }
+                    }
                 }
             }
         });
+        categoryViewModel.getById(categoryId);
 
         if (quizBegun) initQuiz();
     }
@@ -189,7 +204,26 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
-        adapter = new QuizAdapter(this, (int)wordAmountSp.getSelectedItem(), new QuizAdapter.QuizAdapterListener() {
+        int totalCount;
+        if (wordAmountSp != null) {
+            totalCount = (int)wordAmountSp.getSelectedItem();
+
+        } else if (wrongWordsArr != null) {
+            totalCount = wrongWordsArr.size();
+
+        } else {
+            totalCount = items.size();
+        }
+
+        int color;
+        if (USE_COLOR_QUIZ_FLASHCARDS) {
+            color = Color.parseColor(categoryViewModel.getById().getValue().getColorHex());
+        } else {
+            color = Color.WHITE;
+        }
+
+        adapter = new QuizAdapter(this, totalCount, color,
+                new QuizAdapter.QuizAdapterListener() {
             @Override
             public void notifyFlipped(int position) {
                 if (position == reachedFlag && answerState == ANSWER_INDETERMINATE) {
@@ -217,22 +251,20 @@ public class QuizActivity extends AppCompatActivity {
                 if (reachedFlag!=items.size()) {
                     setIndeterminate();
 
-                    if (reachedFlag+1==items.size())
-                        nextBtn.setImageResource(R.drawable.icon_finish);
-
                 } else { // Quiz Complete
+                    nextBtn.setOnClickListener(null);
                     ResultViewModel resultViewModel = ViewModelProviders.of(this).get(ResultViewModel.class);
 
-                    ArrayList<Integer> correctIds = new ArrayList<>();
-                    ArrayList<Integer> wrongIds = new ArrayList<>();
+                    ArrayList<String> wordIds = new ArrayList<>();
                     for (QuizItem item : stats) {
-                        if (item.getOutcome()==ANSWER_CORRECT) correctIds.add(item.getId());
-                        else wrongIds.add(item.getId());
+                        String prefix;
+                        if (item.getOutcome()==ANSWER_CORRECT) prefix = "C:";
+                        else prefix = "W:";
+
+                        wordIds.add(prefix + item.getId());
                     }
 
-                    Result res = new Result(categoryId,
-                            Calendar.getInstance().getTime(),
-                            correctIds, wrongIds);
+                    Result res = new Result(categoryId, Calendar.getInstance().getTime(), correctCounter, wrongCounter, wordIds);
 
                     resultViewModel.getLastId().observe(QuizActivity.this, new Observer<Integer>() {
                         @Override
@@ -241,9 +273,12 @@ public class QuizActivity extends AppCompatActivity {
                                 categoryViewModel.getById().getValue().setLearnedWordCnt(correctCounter);
                                 categoryViewModel.update(categoryViewModel.getById().getValue());
 
-                                startStatisticsDetailFragment(categoryId,integer);
+                                int percent = (int)((double)correctCounter/items.size()*100);
 
-                                setResult(Activity.RESULT_OK);
+                                Intent data = new Intent();
+                                data.putExtra("resId", integer);
+                                data.putExtra("feedbackMsg", new QuizFeedback().getRandomSnark(percent));
+                                setResult(Activity.RESULT_OK, data);
                                 finish();
                             }
                         }
@@ -271,10 +306,6 @@ public class QuizActivity extends AppCompatActivity {
         });
     }
 
-    private void startStatisticsDetailFragment(int categoryId, int resId) {
-
-    }
-
     private void setPageFromStats(int pageNum) {
         int outcome = stats.get(pageNum).getOutcome();
         updateButtons(ANSWER_INDETERMINATE);
@@ -297,20 +328,36 @@ public class QuizActivity extends AppCompatActivity {
         CheckBox shuffleCb = findViewById(R.id.q_shuffleCb);
 
         WordViewModel wordViewModel = ViewModelProviders.of(this).get(WordViewModel.class);
-        wordViewModel.getAllByCategoryIdLite(categoryId);
         wordViewModel.getAllByCategoryIdLite().observe(this, new Observer<List<WordLite>>() {
             @Override
             public void onChanged(@Nullable List<WordLite> wordLites) {
                 if (wordLites != null) {
                     if (items==null) {
-                        items = wordLites.subList(0,(int) wordAmountSp.getSelectedItem());;
                         if (shuffleCb.isChecked()) {
-                            Collections.shuffle(items);
+                            Collections.shuffle(wordLites);
                         }
+
+                        if ((wrongWordsArr != null) && (wrongWordsArr.size() != 0)) {
+                            items = new ArrayList<>();
+                            for (WordLite word : wordLites) {
+                                if (wrongWordsArr.contains(word.getWordId())) {
+                                    items.add(word);
+                                }
+                            }
+
+                        } else {
+                            items = wordLites.subList(0,(int) wordAmountSp.getSelectedItem());;
+                        }
+
                         stats = new ArrayList<>();
                     }
 
-                    adapter.setItems(items.subList(0,reachedFlag+1));
+                    if (reachedFlag == items.size()) { // when screen is rotated and quiz is finished
+                        adapter.setItems(items.subList(0, reachedFlag));
+                    } else {
+                        adapter.setItems(items.subList(0, reachedFlag + 1));
+
+                    }
                     updateInfoViews();
 
                     if (vpPos == -1) {  // this means that this is a new session
@@ -318,7 +365,7 @@ public class QuizActivity extends AppCompatActivity {
 
                     } else {
                         //Because Viewpager doesn't call necessary methods when page doesn't change
-                        if ((vpPos==viewPager.getCurrentItem()) && (answerState!=ANSWER_INDETERMINATE)) {
+                        if ((vpPos==viewPager.getCurrentItem()) && (vpPos < stats.size())) {
                             setPageFromStats(vpPos);
 
                         } else {
@@ -328,6 +375,7 @@ public class QuizActivity extends AppCompatActivity {
                 }
             }
         });
+        wordViewModel.getAllByCategoryIdLite(categoryId);
     }
 
     private void updateViewPager() {
@@ -374,12 +422,14 @@ public class QuizActivity extends AppCompatActivity {
 
         if (!state) {
             if (stats.size()==adapter.getCount() && reachedFlag!=items.size()) {
-                startFadeUpAnim(nextBtn,0,
-                                (int)getResources().getDimension(R.dimen.quiz_activity_next_btn_diameter));
-                adapter.getCount();
+                startFadeUpAnim(nextBtn,0, (int)getResources().getDimension(R.dimen.quiz_activity_next_btn_diameter));
+
             } else {
                 nextBtn.setVisibility(View.VISIBLE);
             }
+
+            if (reachedFlag==items.size())
+                nextBtn.setImageResource(R.drawable.ic_finish);
         } else {
             nextBtn.setVisibility(GONE);
         }

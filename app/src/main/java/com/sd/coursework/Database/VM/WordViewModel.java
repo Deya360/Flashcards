@@ -18,6 +18,7 @@ public class WordViewModel extends AndroidViewModel {
     private WordRepository repository;
     private LiveData<List<WordPlus>> allWords;
     private MutableLiveData<Word> word;
+    private MutableLiveData<List<WordLite>> words;
     private MutableLiveData<List<Word>> allWordsInCategory;
     private MutableLiveData<List<WordLite>> allWordsInCategoryLite;
     private MutableLiveData<Integer> lastId;
@@ -27,6 +28,7 @@ public class WordViewModel extends AndroidViewModel {
         this.repository = new WordRepository(application);
         this.allWords = repository.getAll();
         this.word =repository.getById();
+        this.words = repository.getByIds();
         this.allWordsInCategory = repository.getAllByCategoryId();
         this.allWordsInCategoryLite = repository.getAllByCategoryIdLite();
         this.lastId = repository.getLastId();
@@ -81,5 +83,13 @@ public class WordViewModel extends AndroidViewModel {
 
     public void getWord(int id) {
         repository.getById(id);
+    }
+
+    public MutableLiveData<List<WordLite>> getWords() {
+        return words;
+    }
+
+    public void getWords(List<Integer> ids) {
+        repository.getByIds(ids);
     }
 }

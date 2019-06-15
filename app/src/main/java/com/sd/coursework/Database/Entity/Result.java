@@ -32,25 +32,22 @@ public class Result {
     @TypeConverters(TimestampConverter.class)
     private Date takenTS;
 
-    @ColumnInfo(name="word_correct_count")  //Should remove this, as it's obsolete
+    @ColumnInfo(name="word_correct_count")
     private int correctWordCnt;
 
-    @ColumnInfo(name="word_correct_id_csv")
-    @TypeConverters(ArrayListConverter.class)
-    private ArrayList<Integer> correctWordIds;
+    @ColumnInfo(name="word_wrong_count")
+    private int wrongWordCnt;
 
-    @ColumnInfo(name="word_wrong_id_csv")
+    @ColumnInfo(name="words_id_csv")
     @TypeConverters(ArrayListConverter.class)
-    private ArrayList<Integer> wrongWordIds;
+    private ArrayList<String> wordIds;
 
-    public Result(int categoryId, Date takenTS,
-                  ArrayList<Integer> correctWordIds,
-                  ArrayList<Integer> wrongWordIds) {
+    public Result(int categoryId, Date takenTS, int correctWordCnt, int wrongWordCnt, ArrayList<String> wordIds) {
         this.categoryId = categoryId;
         this.takenTS = takenTS;
-        this.correctWordCnt = correctWordIds.size();
-        this.correctWordIds =correctWordIds;
-        this.wrongWordIds = wrongWordIds;
+        this.correctWordCnt = correctWordCnt;
+        this.wrongWordCnt = wrongWordCnt;
+        this.wordIds = wordIds;
     }
 
     public int getId() {
@@ -62,21 +59,17 @@ public class Result {
     public int getCorrectWordCnt() {
         return correctWordCnt;
     }
+    public int getWrongWordCnt() {
+        return wrongWordCnt;
+    }
     public Date getTakenTS() {
         return takenTS;
     }
-    public ArrayList<Integer> getCorrectWordIds() {
-        return correctWordIds;
+    public ArrayList<String> getWordIds() {
+        return wordIds;
     }
-    public ArrayList<Integer> getWrongWordIds() {
-        return wrongWordIds;
-    }
-
     public void setId(int id) {
         this.id = id;
-    }
-    public void setCorrectWordCnt(int correctWordCnt) {
-        this.correctWordCnt = correctWordCnt;
     }
 }
 

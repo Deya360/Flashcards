@@ -127,7 +127,7 @@ public class CategoryFragment extends Fragment{
                         .addToBackStack(getResources().getString(R.string.fragment_categories_tag))
                         .commit();
 
-                Toast.makeText(getContext(), String.valueOf(categoryId), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), String.valueOf(categoryId), Toast.LENGTH_SHORT).show();
             }
         });
         recyclerView.setAdapter(adapter);
@@ -256,7 +256,6 @@ public class CategoryFragment extends Fragment{
         NewCategoryDialogFrag.NewCategoryListener dialogListener = new NewCategoryDialogFrag.NewCategoryListener() {
             @Override
             public void onOkClicked(String category, String description, String colorHex) {
-                Log.d("CategoryFragment", "Received");
                 int size = categoryViewModel.getAllCategories().getValue().size();
                 categoryViewModel.insert(new Category(size, category, description, colorHex,0));
                 Toast.makeText(getContext(), "Item added", Toast.LENGTH_SHORT).show();

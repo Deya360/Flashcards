@@ -1,23 +1,25 @@
 package com.sd.coursework.Utils.Adapters;
 
 import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.sd.coursework.Database.Entity.Result;
+import com.sd.coursework.Database.Entity.ResultLite;
 import com.sd.coursework.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class StatisticsDetailAdapter extends RecyclerView.Adapter<StatisticsDetailAdapter.StatisticDetailHolder> {
-    private List<Result> results = new ArrayList<>();
+    private List<ResultLite> results = new ArrayList<>();
 
     public interface StatisticsDetailAdapterListener {
-        void startQuizActivity(int categoryId);
-        void startWordDetailedFrag(int catId, int wordId);
+        void startWordDetailedFrag(int wordId);
     }
 
     @NonNull
@@ -26,21 +28,19 @@ public class StatisticsDetailAdapter extends RecyclerView.Adapter<StatisticsDeta
         this.statisticsDetailAdapterListener = sdal;
     }
 
-    public void setResults(List<Result> results) {
+    public void setResults(List<ResultLite> results) {
         this.results = results;
         notifyDataSetChanged();
     }
 
     class StatisticDetailHolder extends RecyclerView.ViewHolder {
-//        private TextView displayNumTv;
-
-        private View itemView;
+        private TextView wordTv;
+        private ImageView resIv;
 
         StatisticDetailHolder(View itemView) {
             super(itemView);
-//            this.displayNumTv = itemView.findViewById(R.id.statistic_display_numTv);
-
-            this.itemView = itemView;
+            this.wordTv = itemView.findViewById(R.id.statwords_wordTv);
+            this.resIv = itemView.findViewById(R.id.statwords_resIv);
         }
     }
 
@@ -55,14 +55,20 @@ public class StatisticsDetailAdapter extends RecyclerView.Adapter<StatisticsDeta
 
     @Override
     public void onBindViewHolder(@NonNull StatisticDetailHolder holder, int pos) {
-        Result currentResult = results.get(pos);
+        ResultLite currentResult = results.get(pos);
 
-//        holder.displayNumTv.setText("Quiz #" + (getItemCount()-pos));
+        holder.wordTv.setText(currentResult.getWord());
+
+        int imageRec;
+        if (currentResult.isCorrect()) imageRec = R.drawable.ic_correct_24dp;
+        else imageRec = R.drawable.ic_wrong_24dp;
+
+        holder.resIv.setImageResource(imageRec);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                statisticsDetailAdapterListener.startWordDetailedFrag(currentResult.getCategoryId(),sta);
+                statisticsDetailAdapterListener.startWordDetailedFrag(currentResult.getId());
             }
         });
     }

@@ -6,25 +6,25 @@ import java.util.ArrayList;
 
 public class ArrayListConverter {
     @TypeConverter
-    public ArrayList<Integer> fromWordIds(String value) {
+    public ArrayList<String> fromWordIds(String value) {
         String[] strArr = value.split(",",0);
 
-        ArrayList<Integer> arr = new ArrayList<>();
+        ArrayList<String> arr = new ArrayList<>();
         for (String str : strArr) {
             if (!str.isEmpty())
-                arr.add(Integer.parseInt(str.trim()));
+                arr.add(str.trim());
         }
 
         return arr;
     }
 
     @TypeConverter
-    public String ToWordIds(ArrayList<Integer> arr) {
-        String value = "";
+    public String ToWordIds(ArrayList<String> arr) {
+        StringBuilder value = new StringBuilder();
 
-        for (int v :arr)
-            value += v + ",";
+        for (String v :arr)
+            value.append(v).append(",");
 
-        return value;
+        return value.toString();
     }
 }

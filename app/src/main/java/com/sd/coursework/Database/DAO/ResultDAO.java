@@ -20,6 +20,10 @@ public interface ResultDAO {
     @Query("SELECT * FROM result WHERE id=:id")
     Result getById(int id);
 
+    @Query("SELECT * FROM result WHERE id<=:id AND category_id = (SELECT category_id FROM Result where id=:id)" +
+            "ORDER BY id DESC LIMIT 2 OFFSET 0")
+    List<Result> getByIdWithOffset(int id);
+
     @Insert
     long[] insert(Result... results);
 

@@ -1,6 +1,9 @@
 package com.sd.coursework;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -10,14 +13,19 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
+import static com.sd.coursework.BuildConfig.COPR;
 import static com.sd.coursework.CategoryDetailFragment.catdet_editMode;
 import static com.sd.coursework.CategoryFragment.cat_editMode;
 import static com.sd.coursework.WordDetailFragment.nw_editMode;
 
 public class MainActivity extends AppCompatActivity {
+    public static Boolean USE_COLOR_QUIZ_FLASHCARDS = false;
     private int currentNavTab;
 
     NavigationView navView;
@@ -63,7 +71,46 @@ public class MainActivity extends AppCompatActivity {
         });
         navView.setCheckedItem(currentTab);
 
-        switchFragment(currentTab);
+        if (savedInstanceState == null) {
+            switchFragment(currentTab);
+        }
+
+
+        /* Ignore below, just an easter egg,,,, well, not anymore :<( */
+        final String PREFS_NAME = "com.sd.coursework";
+        SharedPreferences prefs = this.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        USE_COLOR_QUIZ_FLASHCARDS = prefs.getBoolean("USE_COLOR_QUIZ_FLASHCARDS",false);
+        navView.getHeaderView(0).findViewById(R.id.imageView).setOnLongClickListener(new View.OnLongClickListener() {
+            int pressCounter = 0;
+            @Override
+            public boolean onLongClick(View v) {
+                if (pressCounter <4) {
+                    v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                    pressCounter++;
+
+                } else {
+                    pressCounter = 0;
+                    Toast.makeText(MainActivity.this, "Developed by " + COPR, Toast.LENGTH_SHORT).show();
+
+
+                    final String msg;
+
+                    if (!USE_COLOR_QUIZ_FLASHCARDS) msg = "Colorful quiz flashcards unlocked!";
+                    else msg = "Clean quiz flashcards restored!";
+                    USE_COLOR_QUIZ_FLASHCARDS = !USE_COLOR_QUIZ_FLASHCARDS;
+                    prefs.edit().putBoolean("USE_COLOR_QUIZ_FLASHCARDS",USE_COLOR_QUIZ_FLASHCARDS).apply();
+
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override public void run() {
+                            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+                        }
+                    }, 2000);
+                }
+
+                return true;
+            }
+        });
     }
 
     @Override
@@ -118,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 manager.popBackStackImmediate (tagS, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
-
 
             manager.beginTransaction()
                     .replace(R.id.main_layout, fragment, tagS)

@@ -13,6 +13,7 @@
     <string name="fragment_categories_detail_tag">categoriesDetailFrag</string>
     <string name="fragment_word_detail_tag">wordDetailFrag</string>
     <string name="fragment_statistics_tag">statisticsFrag</string>
+    <string name="fragment_statistics_detail_tag">statisticsDetailFrag</string>
     <string name="dialog_new_category_tag">newCategoryDialog</string>
 
 </resources>

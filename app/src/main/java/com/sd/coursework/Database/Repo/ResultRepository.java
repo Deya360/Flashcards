@@ -12,13 +12,15 @@ import java.util.List;
 
 interface AsyncResultResponse {
     void resultFetchFinish(Result returnData);
+    void resultsFetchFinish(List<Result> returnData);
     void queryFetchFinish(List<Result> returnData);
     void queryInsertFinish(int insertedId);
 }
 
 public class ResultRepository implements AsyncResultResponse {
     private ResultDAO resultDAO;
-    private MutableLiveData<Result> result = new MutableLiveData<>();;
+    private MutableLiveData<Result> result = new MutableLiveData<>();
+    private MutableLiveData<List<Result>> results = new MutableLiveData<>();
     private MutableLiveData<List<Result>> allResultsForCategory  = new MutableLiveData<>();
     private MutableLiveData<Integer> lastId  = new MutableLiveData<>();
 
@@ -170,4 +172,34 @@ public class ResultRepository implements AsyncResultResponse {
         return result;
     }
 
+    public void getPairById(int id) {
+        new SelectPairByIdAsyncTask(resultDAO,id, this).execute();
+    }
+    private static class SelectPairByIdAsyncTask extends AsyncTask<Void, Void, List<Result>> {
+        private AsyncResultResponse delegate;
+        private ResultDAO resultDAO;
+        private int categoryId;
+
+        SelectPairByIdAsyncTask(ResultDAO resultDAO, int categoryId, AsyncResultResponse delegate) {
+            this.resultDAO = resultDAO;
+            this.categoryId = categoryId;
+            this.delegate = delegate;
+        }
+
+        @Override
+        protected List<Result> doInBackground(Void... voids) {
+            return resultDAO.getByIdWithOffset(categoryId);
+        }
+
+        @Override
+        protected void onPostExecute(List<Result> results) {
+            delegate.resultsFetchFinish(results);
+        }
+    }
+    @Override public void resultsFetchFinish(List<Result> returnData) {
+        this.results.setValue(returnData);
+    }
+    public MutableLiveData<List<Result>> getPairById() {
+        return results;
+    }
 }

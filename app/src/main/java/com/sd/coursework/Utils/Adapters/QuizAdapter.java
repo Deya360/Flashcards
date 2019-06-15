@@ -1,9 +1,9 @@
 package com.sd.coursework.Utils.Adapters;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
+import android.support.v7.widget.CardView;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +24,7 @@ public class QuizAdapter extends PagerAdapter {
 
     private List<WordLite> items = new ArrayList<>();
     private int totalCount;
+    private int backClr;
 
     public interface QuizAdapterListener {
         void notifyFlipped(int position);
@@ -32,10 +33,11 @@ public class QuizAdapter extends PagerAdapter {
     private QuizAdapterListener quizAdapterListener;
 
     private Context context;
-    public QuizAdapter(Context context, int totalCount, QuizAdapterListener qal) {
+    public QuizAdapter(Context context, int totalCount, int backClr, QuizAdapterListener qal) {
         this.context = context;
         this.totalCount = totalCount;
         this.quizAdapterListener = qal;
+        this.backClr = backClr;
     }
 
     public void setItems(List<WordLite> items) {
@@ -84,6 +86,10 @@ public class QuizAdapter extends PagerAdapter {
         TextView wordTv = view.findViewById(R.id.quiz_wordTv);
         TextView defiTv = view.findViewById(R.id.quiz_definitionTv);
         TextView cardCountTv = view.findViewById(R.id.quiz_card_counterTv);
+        CardView frontCard = view.findViewById(R.id.quiz_frontCard);
+        CardView backCard = view.findViewById(R.id.quiz_backCard);
+        frontCard.setCardBackgroundColor(backClr);
+        backCard.setCardBackgroundColor(backClr);
 
         WordLite currentCard = items.get(position);
         wordTv.setText(currentCard.getWordName());

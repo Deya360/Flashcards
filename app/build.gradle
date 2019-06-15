@@ -19,6 +19,7 @@ android {
     }
     buildTypes.each {
         it.buildConfigField 'String', 'APIKEY1', MerriamWebster_API_KEY
+        it.buildConfigField 'String', 'COPR', CopyrightOwner
     }
 
     compileOptions {

@@ -7,12 +7,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,6 +32,7 @@ import android.widget.Toast;
 import com.sd.coursework.API.ResultQuery;
 import com.sd.coursework.API.SuggestionFetcher;
 import com.sd.coursework.API.Suggestion;
+import com.sd.coursework.Database.Entity.Category;
 import com.sd.coursework.Database.Entity.Word;
 import com.sd.coursework.Database.VM.CategoryViewModel;
 import com.sd.coursework.Database.VM.WordViewModel;
@@ -40,12 +43,14 @@ import com.sd.coursework.Utils.ListenerBoolWrapper;
 import com.sd.coursework.Utils.UI.EmptySupportedRecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /** NOTICE: some methods annotations have been omitted,
  *  for properly annotated fragments, check {@link CategoryFragment} && {@link CategoryDetailFragment},
  *  as this fragment is conceptually similar
  *  */
 public class WordDetailFragment extends Fragment implements View.OnClickListener{
+    public static boolean updateNeeded = false; // Hot fix
     public static ListenerBoolWrapper nw_editMode;
     final int OPERATION_NEW = 0, OPERATION_UPDATE = 1;
 
@@ -55,6 +60,9 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
     QuerySuggestionAdapter queryAdapter;
     SuggestionFetcher fetcher;
     boolean expandMenuState = false;
+    boolean shouldShowAddAnotherButton = true;
+    boolean preSetWordName = false;
+    String wordName;
     int operationMode;
     int wordId;
     int categoryId;
@@ -152,39 +160,68 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
         nw_editMode.setListener(new ListenerBoolWrapper.ChangeListener() {
             @Override
             public void onChange(boolean state) {
-                if (getActivity()!= null) {
+                if (getActivity()!= null && !preSetWordName) {
                     getActivity().invalidateOptionsMenu();
                 }
 
                 if (!state) { //Edit mode InActive
                     if (operationMode==OPERATION_NEW) {
                         if(!wordEt.getText().toString().isEmpty()) {
-                            int size = wordViewModel.getAllByCategoryId().getValue().size();
-                            wordViewModel.insert(new Word(categoryId,
-                                                        size+1,
-                                                        wordEt.getText().toString(),
-                                                        definitionEt.getText().toString()));
+
+                            wordViewModel.getAllByCategoryId().observe(WordDetailFragment.this, new Observer<List<Word>>() {
+                                @Override
+                                public void onChanged(@Nullable List<Word> words) {
+                                    if (words!=null) {
+                                        int size = words.size();
+                                        wordViewModel.insert(new Word(categoryId,
+                                                size+1,
+                                                wordEt.getText().toString(),
+                                                definitionEt.getText().toString()));
+                                        wordViewModel.getAllByCategoryId().removeObservers(WordDetailFragment.this);
+                                    }
+                                }
+                            });
+                            wordViewModel.getAllByCategoryId(categoryId);
 
                             categoryViewModel = ViewModelProviders.of(WordDetailFragment.this).get(CategoryViewModel.class);
                             categoryViewModel.updateWordCount(categoryId,1);
 
-                            wordViewModel.getLastId().observe(WordDetailFragment.this, new Observer<Integer>() {
-                                @Override
-                                public void onChanged(@Nullable Integer integer) {
-                                    if (integer!= null) {
-                                        wordId = integer;
-                                        wordViewModel.getWord(wordId);
-
-                                    }
-                                }
-                            });
-
-                            wordViewModel.getWord(wordId);
-
                             operationMode = OPERATION_UPDATE;
-                            getActivity().setTitle("Word Detail");
-                            toggleMenuState(false);
-                            Toast.makeText(getContext(), "Word Added", Toast.LENGTH_SHORT).show();
+                            if (!wordViewModel.getLastId().hasActiveObservers()) {
+                                wordViewModel.getLastId().observe(WordDetailFragment.this, new Observer<Integer>() {
+                                    @Override
+                                    public void onChanged(@Nullable Integer integer) {
+                                        if (integer!= null) {
+                                            wordId = integer;
+                                            wordViewModel.getWord(wordId);
+
+                                            if (preSetWordName) {
+                                                updateNeeded = true;
+                                                getActivity().onBackPressed();
+//                                                categoryViewModel.getById().observe(WordDetailFragment.this, new Observer<Category>() {
+//                                                    @Override
+//                                                    public void onChanged(@Nullable Category category) {
+//                                                        if (category!= null) {
+//
+//                                                        }
+//                                                    }
+//                                                });
+//                                                categoryViewModel.getById(categoryId);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+
+                            if (!preSetWordName) {
+                                getActivity().setTitle("Word Detail");
+                                toggleMenuState(false);
+                                Toast.makeText(getContext(), "Word Added", Toast.LENGTH_SHORT).show();
+
+                            } else {
+                                Toast.makeText(getContext(), "Word Added", Toast.LENGTH_LONG).show();
+                                return;
+                            }
 
                         } else {
 //                            if (savedInstanceState==null) { //TODO FIX BUG
@@ -193,26 +230,28 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
                         }
 
                     } else {
-                        if(!wordEt.getText().toString().isEmpty()) {
-                            boolean needsUpdate = false;
-                            if (!wordEt.getText().toString().equals(wordViewModel.getWord().getValue().getName())) {
-                                wordViewModel.getWord().getValue().setName(wordEt.getText().toString());
-                                needsUpdate = true;
-                            }
-                            if (!definitionEt.getText().toString().equals(wordViewModel.getWord().getValue().getDefinition())) {
-                                wordViewModel.getWord().getValue().setDefinition(definitionEt.getText().toString());
-                                needsUpdate = true;
-                            }
+                        if (operationMode==OPERATION_UPDATE) {
+                            if(!wordEt.getText().toString().isEmpty()) {
+                                boolean needsUpdate = false;
+                                if (!wordEt.getText().toString().equals(wordViewModel.getWord().getValue().getName())) {
+                                    wordViewModel.getWord().getValue().setName(wordEt.getText().toString());
+                                    needsUpdate = true;
+                                }
+                                if (!definitionEt.getText().toString().equals(wordViewModel.getWord().getValue().getDefinition())) {
+                                    wordViewModel.getWord().getValue().setDefinition(definitionEt.getText().toString());
+                                    needsUpdate = true;
+                                }
 
-                            if (needsUpdate) { /* Update only if changed, either alone separately or both fields together */
-                                wordViewModel.update(wordViewModel.getWord().getValue());
-                                wordViewModel.getWord(wordId);
-                                Toast.makeText(getContext(), "Word Updated", Toast.LENGTH_SHORT).show();
-                            }
+                                if (needsUpdate) { /* Update only if changed, either alone separately or both fields together */
+                                    wordViewModel.update(wordViewModel.getWord().getValue());
+                                    wordViewModel.getWord(wordId);
+                                    Toast.makeText(getContext(), "Word Updated", Toast.LENGTH_SHORT).show();
+                                }
 
-                        } else {
-                            wordEt.setText(wordViewModel.getWord().getValue().getName());
-                            definitionEt.setText(wordViewModel.getWord().getValue().getDefinition());
+                            } else {
+                                wordEt.setText(wordViewModel.getWord().getValue().getName());
+                                definitionEt.setText(wordViewModel.getWord().getValue().getDefinition());
+                            }
                         }
                     }
                 }
@@ -226,6 +265,10 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
         if (getArguments()!= null) {
             wordId = getArguments().getInt("wordId");
             categoryId = getArguments().getInt("categoryId");
+            shouldShowAddAnotherButton = getArguments().getBoolean("shouldShowAddAnotherButton");
+            wordName = getArguments().getString("wordName");
+
+            if (wordName!=null) preSetWordName = true;
         }
 
         // bind data view model
@@ -248,7 +291,8 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
             nw_editMode.setState(savedInstanceState.getBoolean("nw_editMode"));
             expandMenuState = savedInstanceState.getBoolean("expandMenuState");
             if (expandMenuState) toggleMenuState(true);
-
+            shouldShowAddAnotherButton = savedInstanceState.getBoolean("shouldShowAddAnotherButton");
+            preSetWordName = savedInstanceState.getBoolean("preSetWordName");
         }
 
 
@@ -256,18 +300,11 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
             if (wordId != -1) {
                 operationMode = OPERATION_UPDATE;
 
-//                if (savedInstanceState == null) {
-//                    wordViewModel.getWord();
-//                }
             } else {
                 operationMode = OPERATION_NEW;
 
                 if (savedInstanceState == null) {
-                    nw_editMode.setState(true);
-                    getActivity().setTitle("New Word");
-                    ResultQuery.clear();
-                    ResultQuery.postUpdate();
-                    wordEt.requestFocus();
+                    prepareForAddition();
                 }
             }
         }
@@ -283,9 +320,21 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
                 setQueryViewAdapter(querySuggestions);
             }
         });
+    }
 
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
-        fab.hide();
+    private void prepareForAddition() {
+        nw_editMode.setState(true);
+        getActivity().setTitle("New Word");
+        ResultQuery.clear();
+        ResultQuery.postUpdate();
+        if (preSetWordName) {
+            wordEt.setText(wordName);
+            definitionEt.requestFocus();
+
+        } else {
+            wordEt.requestFocus();
+            showKeyboard();
+        }
     }
 
     @Override
@@ -314,13 +363,9 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
         // Set toolbar title
         getActivity().setTitle("Word Detail");
 
-        // Set current tab in navigation view
-//        NavigationView menu = getActivity().findViewById(R.id.nav_view);
-//        menu.setCheckedItem(R.id.catTab);
-
         // Hide fab when this fragment is shown
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
-        if (fab.isShown()) fab.hide();
+        if (fab!=null) fab.hide(); //Required when using this fragment through Intent
     }
 
     private void loadSuggestions() {
@@ -335,16 +380,17 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
 
                 // Network connection maybe available, however there may not be any connection,
                 // so, If network connection is available, then check if network accesses is available too
+                //TODO: UNCOMMENT THE BELOW FOR FINAL RELEASE
                 if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-                    new InternetAccessCheck(internet -> {
+//                    new InternetAccessCheck(internet -> {
                         //Callback
-                        if (internet) {
+//                        if (internet) {
                             fetchSuggestions();
 
-                        } else {
-                            Toast.makeText(getContext(), "Can't connect to the server", Toast.LENGTH_LONG).show();
-                        }
-                    });
+//                        } else {
+//                            Toast.makeText(getContext(), "Can't connect to the server", Toast.LENGTH_LONG).show();
+//                        }
+//                    });
                     return;
                 } else {
                     Toast.makeText(getContext(), "Can't connect to the Internet", Toast.LENGTH_LONG).show();
@@ -379,10 +425,7 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
             recyclerView.setEmptyView(emptyView);
 
         } else {
-            if (getActivity()!=null) {
-                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(definitionEt.getWindowToken(), 0);
-            }
+            hideKeyboard();
         }
     }
 
@@ -393,12 +436,24 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
             recyclerView.setEmptyView(emptyView);
 
         } else {
-            if (getActivity()!=null) {
-                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(definitionEt.getWindowToken(), 0);
-            }
+            hideKeyboard();
         }
     }
+
+    private void showKeyboard() {
+        if (getActivity()!=null) {
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(wordEt, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    private void hideKeyboard() {
+        if (getActivity()!=null) {
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(definitionEt.getWindowToken(), 0);
+        }
+    }
+
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -409,6 +464,8 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
         outState.putInt("operationMode",operationMode);
         outState.putBoolean("expandMenuState", expandMenuState);
         outState.putBoolean("nw_editMode", nw_editMode.getState());
+        outState.putBoolean("shouldShowAddAnotherButton",shouldShowAddAnotherButton);
+        outState.putBoolean("preSetWordName",preSetWordName);
     }
 
 
@@ -433,8 +490,14 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
 
         boolean visible = nw_editMode.getState();
         menu.findItem(R.id.action_edit).setVisible(!visible);
-        menu.findItem(R.id.action_add).setVisible(!visible);
         menu.findItem(R.id.action_apply).setVisible(visible);
+
+        if (shouldShowAddAnotherButton) {
+            menu.findItem(R.id.action_add).setVisible(!visible);
+
+        } else {
+            menu.findItem(R.id.action_add).setVisible(false);
+        }
     }
 
     @Override
@@ -467,14 +530,10 @@ public class WordDetailFragment extends Fragment implements View.OnClickListener
 
             case R.id.action_add:
                 operationMode = OPERATION_NEW;
-                nw_editMode.setState(true);
                 wordId = -1;
-                getActivity().setTitle("New Word");
-                ResultQuery.clear();
-                ResultQuery.postUpdate();
+                prepareForAddition();
                 wordEt.setText("");
                 definitionEt.setText("");
-                wordEt.requestFocus();
 
         }
 

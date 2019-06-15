@@ -7,6 +7,7 @@
         android:orderInCategory="300"
         android:title="Delete"
         android:icon="@drawable/ic_delete"
+        android:iconTint="@android:color/white"
         app:showAsAction="ifRoom" />
 
     <item

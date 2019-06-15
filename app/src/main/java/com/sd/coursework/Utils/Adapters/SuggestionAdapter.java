@@ -80,7 +80,6 @@ public class SuggestionAdapter extends RecyclerView.Adapter<SuggestionAdapter.Su
         if (partOfSpeech!=null) {
             holder.posTv.setText("(" + partOfSpeech + ")");
         }
-        Log.i("SuggestionAdapter",currentSuggestion.getDefinition());
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

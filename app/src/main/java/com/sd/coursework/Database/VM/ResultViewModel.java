@@ -13,13 +13,15 @@ import java.util.List;
 public class ResultViewModel extends AndroidViewModel {
     private ResultRepository repository;
     private MutableLiveData<Result> result;
+    private MutableLiveData<List<Result>> results = new MutableLiveData<>();
     private MutableLiveData<List<Result>> allResultsForCategory;
     private MutableLiveData<Integer> lastId;
 
     public ResultViewModel(@NonNull Application application) {
         super(application);
         this.repository = new ResultRepository(application);
-        this.result =repository.getById();
+        this.result = repository.getById();
+        this.results = repository.getPairById();
         this.allResultsForCategory = repository.getAllByCategoryId();
         this.lastId = repository.getLastId();
     }
@@ -50,6 +52,13 @@ public class ResultViewModel extends AndroidViewModel {
     }
     public MutableLiveData<Result> getResult() {
         return result;
+    }
+
+    public void getPairResult(int id) {
+        repository.getPairById(id);
+    }
+    public MutableLiveData<List<Result>> getPairResult() {
+        return results;
     }
 
     public MutableLiveData<Integer> getLastId() {

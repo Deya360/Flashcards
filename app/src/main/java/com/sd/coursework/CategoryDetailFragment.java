@@ -8,11 +8,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.internal.NavigationMenu;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -22,11 +20,9 @@ import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.TooltipCompat;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.ActionMode;
 import android.view.Gravity;
@@ -34,7 +30,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -52,9 +47,9 @@ import com.sd.coursework.Database.VM.CategoryViewModel;
 import com.sd.coursework.Database.VM.WordViewModel;
 import com.sd.coursework.Utils.Adapters.CategoryDetailAdapter;
 import com.sd.coursework.Utils.BckColors;
+import com.sd.coursework.Utils.Dialogs.ColorPickerDialog;
 import com.sd.coursework.Utils.ListenerBoolWrapper;
 import com.sd.coursework.Utils.ListenerIntWrapper;
-import com.sd.coursework.Utils.Dialogs.ColorPickerDialog;
 import com.sd.coursework.Utils.UI.EmptySupportedRecyclerView;
 import com.sd.coursework.Utils.UI.ItemMoveCallback;
 
@@ -63,6 +58,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
+import static com.sd.coursework.WordDetailFragment.updateNeeded;
 
 /** NOTICE: some methods annotations have been omitted,
  *  for properly annotated fragment, check {@link CategoryFragment},
@@ -220,9 +216,16 @@ public class CategoryDetailFragment extends Fragment{
                 data from the database (which repopulates the LiveList with new 'Word' objects
                 causing checkbox data and list positions stored inside the object to be lost)
                 on events like screen rotations and such */
-            if (savedInstanceState == null) {
+            if (savedInstanceState==null) {
                 wordViewModel.getAllByCategoryId(currentId);
                 categoryViewModel.getById(currentId);
+
+            } else {
+                boolean tempEditMode = savedInstanceState.getBoolean("catdet_editMode",false);
+                if (!tempEditMode) {
+                    wordViewModel.getAllByCategoryId(currentId);
+                    categoryViewModel.getById(currentId);
+                }
             }
         }
 
@@ -299,15 +302,16 @@ public class CategoryDetailFragment extends Fragment{
             public void onDelete(List<Integer> itemsList) {
                 wordViewModel.deleteDiscrete(itemsList);
                 wordViewModel.getAllByCategoryId(currentId);
-                categoryViewModel.updateWordCount(currentId,-1*itemsList.size());
+                int changeVal = -1*itemsList.size();
 
                 Category category = categoryViewModel.getById().getValue();
                 if (category!=null) { /* This ensures we don't get test percentage of over 100 */
-                    if (category.getWordCount() < category.getLearnedWordCnt()) {
-                        category.setLearnedWordCnt(category.getLearnedWordCnt());
+                    if (category.getWordCount()+changeVal < category.getLearnedWordCnt()) {
+                        category.setLearnedWordCnt(category.getWordCount()+changeVal);
                         categoryViewModel.update(category);
                     }
                 }
+                categoryViewModel.updateWordCount(currentId,changeVal);
                 categoryViewModel.getById(currentId);
 
                 catdet_editMode.setState(false);
@@ -327,6 +331,25 @@ public class CategoryDetailFragment extends Fragment{
         Bundle bundle = new Bundle();
         bundle.putInt("wordId", id);
         bundle.putInt("categoryId",currentId);
+        bundle.putBoolean("shouldShowAddAnotherButton",true);
+        fragment.setArguments(bundle);
+
+        manager.beginTransaction()
+                .setCustomAnimations(R.anim.slide_fade_in, R.anim.slide_fade_out, R.anim.slide_fade_in, R.anim.slide_fade_out)
+                .replace(R.id.main_layout, fragment, tag)
+                .addToBackStack(getResources().getString(R.string.fragment_categories_detail_tag))
+                .commit();
+    }
+
+    private void startStatisticsDetailFragment(int resId, String feedbackMsg) {
+        String tag = getResources().getString(R.string.fragment_statistics_detail_tag);
+        FragmentManager manager = getActivity().getSupportFragmentManager();
+        Fragment fragment = manager.findFragmentByTag(tag);
+        if (fragment == null) fragment = new StatisticsDetailFragment();
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("resultId",resId);
+        bundle.putString("feedbackMsg",feedbackMsg);
         fragment.setArguments(bundle);
 
         manager.beginTransaction()
@@ -424,13 +447,19 @@ public class CategoryDetailFragment extends Fragment{
                     progressLy.setVisibility(View.VISIBLE);
                     circularBack(progressLy, ColorUtils.blendARGB(Color.parseColor(category.getColorHex()),
                             ContextCompat.getColor(getContext(),android.R.color.black),0.2f));
+
+                    float percent;
                     if (category.getWordCount() != 0) {
-                        ProgressBarAnimation anim = new ProgressBarAnimation(progressBar,progressBar.getProgress(),
-                                ((float)category.getLearnedWordCnt() / category.getWordCount())*100);
-                        anim.setStartOffset(250);
-                        anim.setDuration(500);
-                        progressBar.startAnimation(anim);
+                        percent = ((float)category.getLearnedWordCnt() / category.getWordCount())*100;
+                    } else {
+                        percent = 0;
                     }
+                    ProgressBarAnimation anim = new ProgressBarAnimation(progressBar,progressBar.getProgress(),percent);
+                    anim.setStartOffset(250);
+                    anim.setDuration(500);
+                    progressBar.startAnimation(anim);
+                    anim = new ProgressBarAnimation(progressBar,percent,percent);
+                    progressBar.startAnimation(anim);
                 }
             }
         });
@@ -445,7 +474,7 @@ public class CategoryDetailFragment extends Fragment{
     public class ProgressBarAnimation extends Animation {
         private ProgressBar progressBar;
         private float from;
-        private float  to;
+        private float to;
 
         public ProgressBarAnimation(ProgressBar progressBar, float from, float to) {
             super();
@@ -469,7 +498,7 @@ public class CategoryDetailFragment extends Fragment{
         // Set toolbar title
         getActivity().setTitle("Category Detail");
 
-        categoryViewModel = ViewModelProviders.of(this).get(CategoryViewModel.class);
+        categoryViewModel = ViewModelProviders.of(getActivity()).get(CategoryViewModel.class);
 
         // Set current tab in navigation view
         NavigationView menu = getActivity().findViewById(R.id.nav_view);
@@ -522,6 +551,14 @@ public class CategoryDetailFragment extends Fragment{
         catdet_selectedItems.clearListeners();
     }
 
+    @Override
+    public void onResume() {
+        if (updateNeeded && catdet_editMode!=null && !catdet_editMode.getState()) {
+            wordViewModel.getAllByCategoryId(currentId);
+            updateNeeded=false;
+        }
+        super.onResume();
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -540,11 +577,7 @@ public class CategoryDetailFragment extends Fragment{
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_edit2:
-                if (recyclerView.getAdapter()!=null) {
-                    if (recyclerView.getAdapter().getItemCount()!=0) {
-                        catdet_editMode.setState(true);
-                    }
-                }
+                catdet_editMode.setState(true);
                 return true;
 
             case R.id.action_apply2:
@@ -607,6 +640,15 @@ public class CategoryDetailFragment extends Fragment{
         if (requestCode == QUIZ_ACTIVITY_RQ) {
             if (resultCode == RESULT_OK) {
                 categoryViewModel.getById(currentId);
+
+                if (data!=null) {
+                    int resId = data.getIntExtra("resId",-1);
+                    String feedbackMsg = data.getStringExtra("feedbackMsg");
+
+                    if (resId!=-1) {
+                        startStatisticsDetailFragment(resId, feedbackMsg);
+                    }
+                }
             }
         }
     }
